@@ -1,42 +1,161 @@
 #!/usr/bin/env python
 import os
 import json
+import time
 import torch
 import random
+import pickle
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
+# ---------------------------------------------------------------------- #
+#  N-gram Model                                                           #
+# ---------------------------------------------------------------------- #
+
+class NgramModel:
+    """
+    A simple character-level n-gram model for fast next-character prediction.
+
+    Stores frequency counts of (context, next_char) pairs for multiple
+    n-gram orders (e.g. 2-gram through 6-gram). At prediction time, backs
+    off from the longest matching context to the shortest.
+
+    This is orders of magnitude faster than a neural model (~0.01ms vs
+    ~200ms per prediction) and works well for common patterns.
+    """
+
+    def __init__(self, max_n=6, min_n=2):
+        self.max_n = max_n
+        self.min_n = min_n
+        # counts[n][context_string] = {next_char: count}
+        self.counts = {n: defaultdict(lambda: defaultdict(int))
+                       for n in range(min_n, max_n + 1)}
+        self.trained = False
+
+    def train(self, texts):
+        """
+        Train on a list of text strings. Extracts all character n-grams
+        and counts (context → next_char) frequencies.
+        """
+        for text in texts:
+            for n in range(self.min_n, self.max_n + 1):
+                for i in range(len(text) - n):
+                    context = text[i:i + n - 1]
+                    next_char = text[i + n - 1]
+                    self.counts[n][context][next_char] += 1
+
+        self.trained = True
+        total = sum(
+            sum(sum(chars.values()) for chars in ctx.values())
+            for ctx in self.counts.values()
+        )
+        print("  N-gram model trained: {} total n-gram counts".format(total))
+
+    def predict(self, context, k=3, min_count=2):
+        """
+        Predict top-k next characters for the given context string.
+
+        Backs off from longest n-gram to shortest. Returns None if no
+        n-gram has sufficient counts (falls back to neural model).
+
+        Args:
+            context:   the input string
+            k:         number of predictions to return
+            min_count: minimum total count required to trust the n-gram
+
+        Returns:
+            list of top-k characters, or None if n-gram can't predict
+        """
+        if not self.trained:
+            return None
+
+        for n in range(self.max_n, self.min_n - 1, -1):
+            ctx_len = n - 1
+            if len(context) < ctx_len:
+                continue
+
+            ctx = context[-(ctx_len):]
+            char_counts = self.counts[n].get(ctx)
+
+            if char_counts is None:
+                continue
+
+            total = sum(char_counts.values())
+            if total < min_count:
+                continue
+
+            # Sort by frequency
+            sorted_chars = sorted(char_counts.items(),
+                                  key=lambda x: x[1], reverse=True)
+            top = [ch for ch, cnt in sorted_chars[:k]]
+
+            # Pad if needed
+            while len(top) < k:
+                top.append("e")
+
+            return top
+
+        return None
+
+    def save(self, path):
+        """Save n-gram counts to disk."""
+        # Convert defaultdicts to normal dicts for pickling
+        data = {
+            "max_n": self.max_n,
+            "min_n": self.min_n,
+            "trained": self.trained,
+            "counts": {
+                n: {ctx: dict(chars) for ctx, chars in ctx_dict.items()}
+                for n, ctx_dict in self.counts.items()
+            },
+        }
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
+
+    @classmethod
+    def load(cls, path):
+        """Load n-gram counts from disk."""
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        model = cls(max_n=data["max_n"], min_n=data["min_n"])
+        model.trained = data["trained"]
+        for n, ctx_dict in data["counts"].items():
+            for ctx, chars in ctx_dict.items():
+                for ch, count in chars.items():
+                    model.counts[n][ctx][ch] = count
+        return model
+
+
+# ---------------------------------------------------------------------- #
+#  Main Model (Hybrid: N-gram + TinyLlama)                                #
+# ---------------------------------------------------------------------- #
+
 class MyModel:
     """
-    A next-character prediction model powered by TinyLlama.
+    A hybrid next-character prediction model.
 
-    TinyLlama is a 1.1B parameter autoregressive language model trained on
-    3 trillion tokens. Because it is a causal LM, it is naturally suited for
-    next-token prediction — exactly what this task requires.
+    Uses a fast character-level n-gram model as a first pass. When the
+    n-gram model doesn't have enough data for a confident prediction,
+    falls back to TinyLlama (1.1B parameter autoregressive LM).
 
-    Since TinyLlama uses BPE (sub-word) tokenization rather than character-level
-    tokens, we aggregate the probability mass of all tokens whose decoded text
-    starts with the same character. This gives us a principled character-level
-    probability distribution for the next character.
-
-    We then pick the top-3 most probable next characters as our guesses.
+    Tracks per-prediction latency and reports statistics at the end.
     """
 
-    # ------------------------------------------------------------------ #
-    #  Default model identifier                                           #
-    # ------------------------------------------------------------------ #
     DEFAULT_MODEL_NAME = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
 
     def __init__(self, model=None, tokenizer=None, model_name=None, device=None,
-                 token_to_first_char=None):
+                 token_to_first_char=None, ngram_model=None):
         self.model_name = model_name or self.DEFAULT_MODEL_NAME
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.tokenizer = tokenizer
-        # Precomputed mapping: token_id -> first character of decoded token
         self.token_to_first_char = token_to_first_char or {}
+        self.ngram_model = ngram_model or NgramModel()
+
+        # Latency tracking
+        self.latency_log = []  # list of (input, method, time_ms)
 
     # ------------------------------------------------------------------ #
     #  Data helpers                                                       #
@@ -45,11 +164,19 @@ class MyModel:
     @classmethod
     def load_training_data(cls):
         """
-        Load training data for future fine-tuning.
-        TODO: Implement data loading for fine-tuning on domain-specific
-              corpora (e.g. dialogue datasets, multilingual text).
+        Load training data for n-gram model and future fine-tuning.
+        Reads example/corpus.txt to demonstrate n-gram capabilities.
         """
-        return []
+        data = []
+        for path in ["data/corpus.txt", "example/corpus.txt"]:
+            if os.path.exists(path):
+                print("  Reading corpus from {}".format(path))
+                with open(path, encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line:
+                            data.append(line)
+        return data
 
     @classmethod
     def load_test_data(cls, fname):
@@ -69,23 +196,26 @@ class MyModel:
                 f.write("{}\n".format(p))
 
     # ------------------------------------------------------------------ #
-    #  Training (stub — left open for future fine-tuning)                  #
+    #  Training (stub — left open for future work)                         #
     # ------------------------------------------------------------------ #
 
     def run_train(self, data, work_dir):
         """
-        Train / fine-tune the model.
+        Train the n-gram model on text data.
 
         TODO — future work:
-          - Load a large multilingual corpus or dialogue dataset
-          - Fine-tune TinyLlama with causal LM objective
-          - Use LoRA or similar PEFT for efficient fine-tuning
-          - Save adapter weights alongside model config
+          - Load a large multilingual / dialogue corpus
+          - Train the n-gram model on it (already wired up below)
+          - Optionally fine-tune TinyLlama with LoRA
         """
-        pass
+        if data:
+            print("  Training n-gram model on {} texts...".format(len(data)))
+            self.ngram_model.train(data)
+        else:
+            print("  No training data provided — n-gram model will be empty")
 
     # ------------------------------------------------------------------ #
-    #  Prediction — fully implemented for test mode                       #
+    #  TinyLlama setup                                                    #
     # ------------------------------------------------------------------ #
 
     @staticmethod
@@ -93,10 +223,6 @@ class MyModel:
         """
         Build a mapping from every token ID in the vocabulary to the first
         printable character that token decodes to.
-
-        This is computed once at model load time so that inference is fast.
-        Returns a dict: {token_id: first_char} (only for tokens that start
-        with a printable character).
         """
         mapping = {}
         vocab_size = tokenizer.vocab_size
@@ -107,7 +233,6 @@ class MyModel:
                 if not decoded:
                     continue
                 first_char = decoded[0]
-                # Only include if the first character is printable or a space
                 if first_char.isprintable() or first_char == " ":
                     mapping[token_id] = first_char
             except Exception:
@@ -116,7 +241,7 @@ class MyModel:
         return mapping
 
     def _ensure_model_loaded(self):
-        """Lazy-load the model and tokenizer if not already present."""
+        """Lazy-load the TinyLlama model and tokenizer."""
         if self.model is None:
             print("  Loading TinyLlama model: {}".format(self.model_name))
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -128,7 +253,7 @@ class MyModel:
             self.model.eval()
 
             if not self.token_to_first_char:
-                print("  Building token → first-char mapping...")
+                print("  Building token -> first-char mapping...")
                 self.token_to_first_char = self._build_token_to_first_char(
                     self.tokenizer
                 )
@@ -136,40 +261,61 @@ class MyModel:
                     len(self.token_to_first_char)
                 ))
 
+    # ------------------------------------------------------------------ #
+    #  Prediction — hybrid n-gram + TinyLlama with latency tracking        #
+    # ------------------------------------------------------------------ #
+
     def run_pred(self, data):
         """
-        For each input context string, predict the top-3 most likely next
-        UTF-8 characters using TinyLlama.
+        For each input, predict the top-3 next characters.
 
         Strategy:
-          1. Tokenize the context string.
-          2. Run a forward pass to get next-token logits.
-          3. Convert logits to probabilities.
-          4. Aggregate probabilities by the first character each token
-             would produce (using precomputed mapping).
-          5. Return the top-3 characters by aggregated probability.
+          1. Try the n-gram model first (fast path: ~0.01ms)
+          2. If n-gram doesn't have enough data, fall back to TinyLlama (~200ms)
+          3. Log latency and method for every prediction
 
-        Returns a list of 3-character strings (one per input).
+        Prints a latency summary at the end.
         """
         self._ensure_model_loaded()
+        self.latency_log = []
         preds = []
 
+        ngram_count = 0
+        llm_count = 0
+
         for i, inp in enumerate(data):
-            top_chars = self._predict_top_chars(inp, k=3)
+            t0 = time.perf_counter()
+
+            # --- Fast path: n-gram ---
+            ngram_pred = self.ngram_model.predict(inp, k=3)
+
+            if ngram_pred is not None:
+                top_chars = ngram_pred
+                method = "ngram"
+                ngram_count += 1
+            else:
+                # --- Slow path: TinyLlama ---
+                top_chars = self._predict_top_chars_llm(inp, k=3)
+                method = "llm"
+                llm_count += 1
+
+            elapsed_ms = (time.perf_counter() - t0) * 1000
+            self.latency_log.append((inp[:30], method, elapsed_ms))
             preds.append("".join(top_chars))
+
             if (i + 1) % 100 == 0:
                 print("  Processed {}/{} inputs".format(i + 1, len(data)))
 
+        # --- Print latency summary ---
+        self._print_latency_summary(ngram_count, llm_count)
+
         return preds
 
-    def _predict_top_chars(self, context, k=3):
+    def _predict_top_chars_llm(self, context, k=3):
         """
-        Given a context string, return the top-k most likely next characters.
-
-        Aggregates the probability mass over all BPE tokens whose decoded
-        form starts with the same character.
+        Predict top-k next characters using TinyLlama.
+        Aggregates BPE token probabilities by first character.
         """
-        # Tokenize the input context
         inputs = self.tokenizer(
             context,
             return_tensors="pt",
@@ -180,43 +326,79 @@ class MyModel:
         with torch.no_grad():
             outputs = self.model(**inputs)
 
-        # Get logits for the last position (next token prediction)
-        logits = outputs.logits[0, -1, :]  # (vocab_size,)
-
-        # Convert to probabilities
+        logits = outputs.logits[0, -1, :]
         probs = torch.softmax(logits, dim=0)
 
-        # Aggregate probabilities by first character
         char_probs = defaultdict(float)
         for token_id, first_char in self.token_to_first_char.items():
             if token_id < len(probs):
                 char_probs[first_char] += probs[token_id].item()
 
-        # Sort characters by aggregated probability (descending)
         sorted_chars = sorted(char_probs.items(), key=lambda x: x[1], reverse=True)
-
-        # Collect top-k
         top_chars = [char for char, prob in sorted_chars[:k]]
 
-        # Fallback
         while len(top_chars) < k:
             top_chars.append("e")
 
         return top_chars
+
+    def _print_latency_summary(self, ngram_count, llm_count):
+        """Print per-prediction latency stats."""
+        if not self.latency_log:
+            return
+
+        total = len(self.latency_log)
+        all_times = [t for _, _, t in self.latency_log]
+        ngram_times = [t for _, m, t in self.latency_log if m == "ngram"]
+        llm_times = [t for _, m, t in self.latency_log if m == "llm"]
+
+        print("\n" + "=" * 65)
+        print("  LATENCY SUMMARY")
+        print("=" * 65)
+        print("  Total predictions:     {}".format(total))
+        print("  N-gram predictions:    {} ({:.1f}%)".format(
+            ngram_count, 100.0 * ngram_count / total if total else 0))
+        print("  TinyLlama predictions: {} ({:.1f}%)".format(
+            llm_count, 100.0 * llm_count / total if total else 0))
+        print("-" * 65)
+        print("  Overall   — avg: {:.2f}ms  min: {:.2f}ms  max: {:.2f}ms  total: {:.1f}s".format(
+            sum(all_times) / len(all_times),
+            min(all_times),
+            max(all_times),
+            sum(all_times) / 1000,
+        ))
+        if ngram_times:
+            print("  N-gram    — avg: {:.3f}ms  min: {:.3f}ms  max: {:.3f}ms".format(
+                sum(ngram_times) / len(ngram_times),
+                min(ngram_times),
+                max(ngram_times),
+            ))
+        if llm_times:
+            print("  TinyLlama — avg: {:.2f}ms  min: {:.2f}ms  max: {:.2f}ms".format(
+                sum(llm_times) / len(llm_times),
+                min(llm_times),
+                max(llm_times),
+            ))
+        print("-" * 65)
+
+        # Per-prediction detail
+        print("\n  Per-prediction detail:")
+        print("  {:>4s}  {:>6s}  {:>10s}  {}".format("#", "Method", "Time(ms)", "Input"))
+        print("  " + "-" * 55)
+        for i, (inp, method, t) in enumerate(self.latency_log):
+            print("  {:>4d}  {:>6s}  {:>10.2f}  {}".format(
+                i + 1, method, t, repr(inp)))
+        print("=" * 65 + "\n")
 
     # ------------------------------------------------------------------ #
     #  Save / Load                                                        #
     # ------------------------------------------------------------------ #
 
     def save(self, work_dir):
-        """
-        Save model config to work_dir.
-
-        For the base (non-fine-tuned) model we only save a config file
-        indicating which HuggingFace model to load. After fine-tuning,
-        we would also save adapter/model weights here.
-        """
+        """Save model config and n-gram model to work_dir."""
         os.makedirs(work_dir, exist_ok=True)
+
+        # Save main config
         config_path = os.path.join(work_dir, "model.config.json")
         config = {
             "model_name": self.model_name,
@@ -225,19 +407,18 @@ class MyModel:
         with open(config_path, "wt", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
 
+        # Save n-gram model
+        ngram_path = os.path.join(work_dir, "ngram_model.pkl")
+        self.ngram_model.save(ngram_path)
+        print("  Saved n-gram model to {}".format(ngram_path))
+
         # Legacy checkpoint file for compatibility
         with open(os.path.join(work_dir, "model.checkpoint"), "wt") as f:
-            f.write("tinyllama")
+            f.write("tinyllama+ngram")
 
     @classmethod
     def load(cls, work_dir):
-        """
-        Load a saved model from work_dir.
-
-        Reads the config to determine which model to load. If a fine-tuned
-        checkpoint exists, loads that; otherwise loads the pretrained model
-        from HuggingFace.
-        """
+        """Load model config, n-gram model, and TinyLlama from work_dir."""
         config_path = os.path.join(work_dir, "model.config.json")
         model_name = cls.DEFAULT_MODEL_NAME
         fine_tuned = False
@@ -250,8 +431,8 @@ class MyModel:
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
+        # Load TinyLlama
         if fine_tuned:
-            # Future: load fine-tuned weights / LoRA adapter from work_dir
             ft_path = os.path.join(work_dir, "tinyllama_finetuned")
             print("  Loading fine-tuned model from {}".format(ft_path))
             tokenizer = AutoTokenizer.from_pretrained(ft_path)
@@ -267,10 +448,19 @@ class MyModel:
         model.to(device)
         model.eval()
 
-        # Precompute token → first char mapping
-        print("  Building token → first-char mapping...")
+        # Precompute token -> first char mapping
+        print("  Building token -> first-char mapping...")
         token_to_first_char = cls._build_token_to_first_char(tokenizer)
         print("  Mapped {} tokens to first characters".format(len(token_to_first_char)))
+
+        # Load n-gram model
+        ngram_path = os.path.join(work_dir, "ngram_model.pkl")
+        if os.path.exists(ngram_path):
+            ngram_model = NgramModel.load(ngram_path)
+            print("  Loaded n-gram model (trained={})".format(ngram_model.trained))
+        else:
+            ngram_model = NgramModel()
+            print("  No n-gram model found — using TinyLlama only")
 
         return cls(
             model=model,
@@ -278,6 +468,7 @@ class MyModel:
             model_name=model_name,
             device=device,
             token_to_first_char=token_to_first_char,
+            ngram_model=ngram_model,
         )
 
 
