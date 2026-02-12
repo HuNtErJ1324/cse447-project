@@ -1,0 +1,921 @@
+Roger, we copy you on the ground. You got a bunch of guys about to turn blue. We're breathing again. Thanks a lot.
+Houston, Apollo 11. We've completed our maneuver.
+Roger. Reading you five-by.
+The Eagle has landed.
+That's one small step for man, one giant leap for mankind.
+Tranquility Base here. The Eagle has landed.
+Roger, Tranquility. We copy you on the ground.
+Houston, this is Neil. Radio check.
+Neil, this is Houston. Loud and clear.
+Roger. We're getting a picture on the TV.
+It's quite dark here in the shadow and a little hard for me to see that I have good footing.
+This is very interesting. It's a very soft surface, but here and there where I plug with the contingency sample collector, I run into a very hard surface.
+There seems to be no difficulty in moving around as we suspected. It's even perhaps easier than the simulations at one sixth g that we performed in the various simulations on the ground.
+The descent engine did not leave a crater of any size. It has about 1 foot clearance on the ground.
+Apollo 11, Houston. Looks like we've got a good PTC going. It's good night from the White Team. Over.
+Okay. See you tomorrow. Thank you for everything.
+Roger. The magazine we'll be using for entry tomorrow is magazine M. Over.
+We wish to bid you a good night and Godspeed.
+Thank you. We appreciate all that fine work done by the Green Team, and we'll be thanking you in person when we get back.
+Really enjoyed working with all of you. Thanks very much. Over.
+Houston, Apollo 11. How do you read on Bravo?
+Roger. Reading you five-by.
+All the blasted wires are all connected, is all I know.
+He was shaving a little bit ago. He might have just let it slip. Hold on a moment.
+You're looking good here.
+Okay. We're going to be busy for a minute.
+Roger. We copy. It was beautiful from here, Tranquility. Over.
+We'll get to the details of what's around here, but it looks like a collection of just about every variety of shape, angularity, granularity, about every variety of rock you could find.
+Roger. Copy. Sounds good to us, Tranquility. We'll let you press on through the simulated countdown, and we'll talk to you later. Over.
+Okay. This one sixth g is just like the airplane.
+Roger. Tranquility. Be advised there's lots of smiling faces in this room and all over the world.
+Roger, 11. We recommend you turn the fans on manually and ensure that the oxygen headers are in the AUTOMATIC position.
+Roger. Oxygen heaters are ON, and we're going to cycle the oxygen fans now.
+In reference to your question on RCS usage; it looks like you are about 18, maybe 20 pounds below nominal at the present time. No problem at all. Over.
+Apollo 11, this is Houston through Guaymas. Over.
+Roger, Houston. Reading you loud and clear.
+Roger. Reading you the same. Coming up on AOS Goldstone.
+You'll be AOS at Goldstone at 1 29 02; LOS at Goldstone 1 33 55. Over.
+Roger, Bruce. Thank you. We expect TV. We've got it all hooked up. We have not yet turned it on. We're ready to do that now.
+Roger. We copy. We'll be configured and waiting for whatever you want to send down.
+We don't see any time constraint. We'd like you to go ahead and set up the wide deadband and then go through step 10 and 11. Over.
+Okay. Will do. I don't see any constraint here, Charlie.
+Step 11 complete.
+Roger. We copy.
+Would you please select OMNI Bravo? Over.
+Roger. Bravo.
+Go ahead, 11. Over.
+The S IVB is about 6000 nautical miles from you now. Over.
+Good morning. Are you planning a midcourse correction 4 this morning?
+That's negative. Midcourse number 4 is not required. We were going to let you sleep in until about 71 hours if you'd like to turn over.
+Okay. That'll be fine.
+Contact light. Okay. Engine stop.
+CAPCOM: 60 seconds.
+Lights on. Down 2 and a half. Forward, forward.
+40 feet, down 2 and a half. Kicking up some dust.
+4 forward, 4 forward. Drifting to the right a little.
+Roger. 1201 alarm. We're Go. Same type. We're Go.
+Altitude-velocity light. 3 and a half down, 220 feet, 13 forward.
+11 forward. Coming down nicely.
+Eagle, Houston. You're looking good at 2. PGNS, AGS, and MSFN all agree.
+7, 6, 5, abort stage, engine arm ascent. Beautiful. Very smooth. Very quiet ride.
+There's that one crater down there. 1000 feet high, 80 feet per second vertical rise.
+Roger. Understand. We're number one on the runway.
+Houston, Columbia. You have P00 in ACCEPT, and how are you reading me now?
+Roger. Understand, we have P00 in ACCEPT. You're about three by on the voice, Mike. Over.
+Okay. You're coming in loud and clear, and I'm configured for normal voice. If you've got any switch changes, let me know.
+Roger. We've got some noise somewhere in the system down here, I think. We're working on it.
+And I've got a 130 landmark update for you, and also a DAP load whenever you're ready to copy.
+It looks like we're venting the oxidizer now.
+Roger, Eagle. And you are STAY for T1.
+Roger. Understand, STAY for T1.
+Roger. And we see you venting the OX.
+Yes. I heard the whole thing.
+Engine STOP RESET.
+Houston, Columbia went UPTELEMETRY COMMAND, RESET, to reacquire on the high gain.
+Eagle, Houston. You loaded R2 wrong. We want 10254.
+That's affirmative.
+Like an AGS to PGNS align.
+Roger. We're standing by for it.
+Eagle, Houston. You are STAY for T2. Over.
+Houston, this is Eagle. How do you read? Over.
+Eagle, this is Houston. Are you calling? Over.
+Roger. How do you read? Over.
+Roger. Reading you about three by, Buzz; a lot of noise on the loop. We think it's coming from Columbia, but we can't tell.
+We're unable to raise voice with him. Would he please go to high gain. Over.
+Okay. I'll have him go to high gain. It's probably the glycol pump you hear in the background.
+I'm up to the point where I turn on the IMU. Would you recommend I hold off here for a few minutes or go ahead and power up the IMU? Over.
+Roger. Stand by.
+Hey, get your high gain to working.
+Church services around the world today are mentioning Apollo 11 in their prayers.
+President Nixon's worship service at the White House is also dedicated to the mission.
+Buzz, your son, Andy, got a tour of MSC yesterday.
+Among the large headlines concerning Apollo this morning, there's one asking that you watch for a lovely girl with a big rabbit.
+An ancient legend says a beautiful Chinese girl called Chang-o has been living there for 4000 years.
+Apollo 11, Houston. Three minutes to LOS; AOS at 96 plus 20.
+Roger. We'll be going off here shortly, and we'll pick you up in the morning for sure.
+Hello, Columbia. Houston. Do you read? Over.
+Stand by one.
+Columbia, this is Houston. Would you please give us P00 in ACCEPT. We have a state vector for you. Over.
+Okay. Will you verify the position, the opening I ought to have on the camera?
+Okay. Neil, we can see you coming down the ladder now.
+Okay. I just checked getting back up to that first step, Buzz. It's not even collapsed too far, but it's adequate to get back up.
+Roger. We copy.
+It takes a pretty good little jump.
+Buzz, this is Houston. F/2, 1/160th second for shadow photography on the sequence camera.
+Neil, we're reading you loud and clear. We see you getting some pictures and the contingency sample.
+Neil, this is Houston. Did you copy about the contingency sample? Over.
+Roger. I'm going to get to that just as soon as I finish these picture series.
+Okay. Going to get the contingency sample there, Neil.
+Okay. The contingency sample is down. Looks like it's a little difficult to dig through the initial crust.
+I'll try to get a rock in here.
+Neil, this is Houston. We're copying.
+Okay. It's quite dark here in the shadow and a little hard for me to see that I have good footing. I'll work my way over into the sunlight here without looking directly into the Sun.
+I can see some evidence of rays emanating from the descent engine, but a very insignificant amount.
+We're essentially on a very level place here.
+Okay. You'll have to pay out all the LEC. It looks like it's coming out nice and evenly.
+Flight, this is CAPCOM. The crew is requesting permission to initiate the burn sequence early due to favorable alignment.
+Negative, CAPCOM. We need confirmation from FIDO before proceeding with any trajectory adjustments.
+Understood, Flight. Standing by for FIDO clearance.
+Roger that. Telemetry shows fuel cell three is running hot. Recommend we throttle back to preserve margins.
+Copy. Throttling fuel cell three to 85 percent. Monitoring temps closely.
+Houston, we're seeing some anomalous vibration in the starboard RCS cluster. Nothing critical but wanted to flag it.
+Roger. We're tracking it on our end. Looks like a thruster valve cycling slightly out of spec. Continue monitoring and report any changes.
+Will do. All other systems nominal. Cabin pressure holding steady at 5 PSI.
+Copy that. You're go for EVA prep when ready.
+Initiating pre-breathe protocol now. Estimate 45 minutes until we're ready to open the hatch.
+Understood. We'll have the go/no-go decision for you in 30 minutes.
+Flight, GUIDANCE here. The star tracker is having trouble locking on Canopus. Too much debris in the field of view.
+Can you switch to manual mode and use the Sun sensor as backup?
+Affirmative. Switching to manual attitude control now.
+Roger. Let us know when you have solid lock.
+Houston, confirming solid lock on Canopus. Attitude is stable, ready for midcourse correction burn.
+Outstanding. You are go for the burn. Mark when ready.
+Mark. Initiating burn in 3, 2, 1, burn.
+Burn looks good from here. Delta-V right on target.
+Burn complete. Shutting down main engine. All parameters nominal.
+Copy. Nice work up there. That puts you right on the money for orbital insertion.
+Thanks, Houston. We're going to secure the cabin and get some rest before the next comm pass.
+Roger that. Sleep well. We'll wake you up for the next window.
+Houston, we've got a master alarm. Checking systems now.
+Stand by. What's the indication?
+Looks like we've lost one of the IMU gimbal locks. Switching to backup.
+Copy. We see it. Backup IMU is showing good. You're clear to continue.
+Roger. Backup is solid. Continuing with flight plan.
+CAPCOM, this is EVA-1. I'm at the airlock hatch now. Commencing egress.
+Copy, EVA-1. You are go for egress. Watch your tether.
+Hatch is open. Beautiful view out here. The Earth looks incredible from up here.
+We can see you on camera. Looking good. Take your time and enjoy the moment.
+Roger that. Moving to the first worksite now.
+Flight, we're showing a pressure drop in the secondary oxygen tank. Recommend we switch to primary.
+Agreed. Switch to primary O2 and monitor the secondary. Let's see if it stabilizes.
+Switching now. Primary tank is nominal. Secondary is holding but not repressurizing.
+Keep an eye on it. If it continues to drop, we may need to scrub the second EVA.
+Understood, Flight. Will monitor closely.
+Houston, I'm seeing some ice crystals forming on the exterior of the service module. Is that normal?
+Roger. We're aware. It's condensation from the fuel cell purge. Nothing to worry about.
+Copy. Just wanted to make sure.
+Appreciate the heads up. Always better to report than assume.
+Houston, we're ready to begin the docking sequence. Request permission to proceed.
+You are go for docking. Close at 0.1 feet per second. Nice and easy.
+Copy. Closing rate 0.1. Looking good on alignment.
+Capture. Docking complete. All latches secure.
+Outstanding. Welcome aboard. How does it feel to be docked?
+Feels great, Houston. It's good to be connected again.
+Roger. We'll let you get settled in. Next comm window in 45 minutes.
+Copy. See you in 45.
+Flight, SURGEON here. Crew heart rates are elevated but within acceptable range. Recommend they take it easy for the next hour.
+Agreed. CAPCOM, relay to the crew to take a break and hydrate.
+Will do, Flight.
+Houston, this is Commander. We're all feeling good up here. Just excited about the upcoming tasks.
+Copy that, Commander. Just pace yourselves. It's going to be a long mission.
+Understood. We'll take it easy.
+Flight, EECOM here. Battery levels are looking good. We've got plenty of margin for the extended EVA.
+Excellent. Let's plan for the full duration then.
+Roger, Flight. I'll update the timeline.
+Houston, we're ready to deploy the solar array. Requesting clearance.
+You are clear to deploy. Proceed when ready.
+Deploying now. Array is extending smoothly.
+Deployment complete. Solar array is locked and generating power.
+Copy. We see good voltage and current on telemetry. Nice work.
+Thanks, Houston. That's one major milestone complete.
+Roger. You're ahead of schedule. Take a moment to enjoy it.
+Will do. It's been a great day.
+Houston, we're preparing for reentry. All checklists complete. Ready for final go/no-go.
+Stand by. Polling the room now.
+Flight, all stations report go for entry.
+Copy. CAPCOM, you are go to relay.
+Roger, Flight. Crew, you are go for entry. Safe travels.
+Thank you, Houston. See you on the ground.
+Welcome home. The recovery team is standing by.
+Good to be back. We can see the carrier from here.
+The quick brown fox jumps over the lazy dog.
+Happy New Year!
+That's one small step for man, one giant leap for mankind.
+To be or not to be, that is the question.
+All's well that ends well.
+Hello, world! How are you today?
+I love learning new languages and exploring different cultures.
+The sun rises in the east and sets in the west.
+Time flies when you're having fun.
+Knowledge is power, and education is the key to success.
+Life is like a box of chocolates, you never know what you're going to get.
+Where there's a will, there's a way.
+Practice makes perfect, so keep trying your best.
+A journey of a thousand miles begins with a single step.
+Actions speak louder than words.
+The early bird catches the worm.
+Don't count your chickens before they hatch.
+Every cloud has a silver lining.
+Home is where the heart is.
+Better late than never, but better never late.
+El rápido zorro marrón salta sobre el perro perezoso.
+¡Feliz Año Nuevo! ¿Cómo estás hoy?
+La vida es bella cuando compartimos momentos con las personas que amamos.
+El conocimiento es el tesoro más valioso que podemos poseer.
+Cada día es una nueva oportunidad para aprender y crecer.
+La música es el lenguaje universal del alma humana.
+Buenos días, espero que tengas un día maravilloso.
+El trabajo duro y la dedicación siempre dan buenos frutos.
+La familia es lo más importante en la vida.
+Nunca es tarde para perseguir tus sueños y alcanzar tus metas.
+La amistad verdadera es un regalo precioso.
+El respeto y la tolerancia son fundamentales en la sociedad.
+La naturaleza nos ofrece belleza y paz cada día.
+Aprender de nuestros errores nos hace más fuertes.
+La paciencia es una virtud que debemos cultivar.
+Un viaje de mil kilómetros comienza con un solo paso.
+La honestidad es la base de todas las relaciones.
+El amor y la compasión pueden cambiar el mundo.
+Cada persona tiene un talento único y especial.
+La esperanza es lo último que se pierde.
+你好，世界！今天天气真好。
+学习新语言是一件非常有趣的事情。
+知识改变命运，教育成就未来。
+时间就像海绵里的水，只要愿意挤总还是有的。
+一分耕耘，一分收获。
+熟能生巧，勤能补拙。
+千里之行，始于足下。
+团结就是力量，合作才能共赢。
+家和万事兴，和气生财。
+读万卷书，行万里路。
+书山有路勤为径，学海无涯苦作舟。
+良好的开端是成功的一半。
+失败是成功之母，从错误中学习。
+人生就像一盒巧克力，你永远不知道下一颗是什么味道。
+天道酬勤，努力终会有回报。
+机会总是留给有准备的人。
+有志者事竟成，苦心人天不负。
+一寸光阴一寸金，寸金难买寸光阴。
+滴水穿石，非一日之功。
+己所不欲，勿施于人。
+नमस्ते! आज का दिन बहुत सुंदर है।
+ज्ञान ही शक्ति है और शिक्षा सफलता की कुंजी है।
+जीवन एक यात्रा है, हर दिन नया अनुभव लाता है।
+मेहनत और लगन से हर मुश्किल आसान हो जाती है।
+परिवार और दोस्त जीवन का सबसे बड़ा खजाना हैं।
+समय बहुत कीमती है, इसका सदुपयोग करना चाहिए।
+सच्चाई और ईमानदारी हमेशा जीत जाती है।
+प्रकृति हमें शांति और खुशी देती है।
+शिक्षा सबसे बड़ा धन है जो कोई चुरा नहीं सकता।
+आशा कभी नहीं खोनी चाहिए।
+संगीत सभी की भाषा है।
+हर किसी के पास कुछ विशेष प्रतिभा होती है।
+दया और करुणा दुनिया को बदल सकते हैं।
+अच्छे काम का फल हमेशा मीठा होता है।
+जहां चाह वहां राह है।
+धैर्य एक महान गुण है।
+मित्रता अनमोल उपहार है।
+अभ्यास से ही परिपूर्णता आती है।
+जो बीत गई सो बात गई।
+कल करे सो आज कर, आज करे सो अब।
+مرحبا بك! كيف حالك اليوم؟
+العلم نور والجهل ظلام.
+الحياة جميلة عندما نشاركها مع من نحب.
+الصبر مفتاح الفرج والنجاح.
+العمل الجاد يؤدي دائماً إلى النجاح.
+الأسرة هي أغلى ما نملك في الحياة.
+التعلم رحلة لا تنتهي أبداً.
+الصداقة الحقيقية كنز ثمين.
+الأمل هو آخر ما يموت في القلب.
+الاحترام والتسامح أساس المجتمع.
+الطبيعة تمنحنا الجمال والسكينة.
+من الأخطاء نتعلم ونصبح أقوى.
+الصدق أساس كل العلاقات الناجحة.
+كل شخص لديه موهبة فريدة.
+المحبة والرحمة يمكن أن تغير العالم.
+الوقت كالسيف إن لم تقطعه قطعك.
+العلم في الصغر كالنقش على الحجر.
+اطلبوا العلم من المهد إلى اللحد.
+من جد وجد ومن زرع حصد.
+في الاتحاد قوة وفي التفرق ضعف.
+Olá, mundo! Como você está hoje?
+O conhecimento é poder e a educação é fundamental.
+A vida é bela quando compartilhamos com quem amamos.
+O trabalho duro sempre traz bons resultados.
+A família é o tesouro mais precioso que temos.
+Nunca é tarde para aprender algo novo.
+A amizade verdadeira é um presente raro.
+O respeito e a tolerância são essenciais.
+A natureza nos oferece paz e beleza.
+Aprender com os erros nos torna mais fortes.
+A paciência é uma virtude importante.
+Cada pessoa tem um talento único.
+O amor e a compasão podem mudar o mundo.
+Onde há vontade, há um caminho.
+A prática leva à perfeição.
+O tempo é o nosso bem mais valioso.
+A honestidade é a base de tudo.
+Nunca desista dos seus sonhos.
+A música é a linguagem da alma.
+Cada dia é uma nova oportunidade.
+Привет, мир! Как дела сегодня?
+Знание — это сила, образование — ключ к успеху.
+Жизнь прекрасна, когда мы делимся ею с любимыми.
+Упорный труд всегда приносит результаты.
+Семья — самое ценное, что у нас есть.
+Учиться никогда не поздно.
+Настоящая дружба — редкий дар.
+Уважение и терпимость очень важны.
+Природа дарит нам покой и красоту.
+Ошибки делают нас сильнее.
+Терпение — великая добродетель.
+У каждого человека есть уникальный талант.
+Любовь и сострадание могут изменить мир.
+Где есть желание, там есть и путь.
+Практика ведёт к совершенству.
+Время — наш самый ценный ресурс.
+Честность — основа всего.
+Никогда не сдавайтесь.
+Музыка — язык души.
+Каждый день — новая возможность.
+Bonjour, monde! Comment allez-vous aujourd'hui?
+La connaissance est le pouvoir et l'éducation est essentielle.
+La vie est belle quand on la partage avec ceux qu'on aime.
+Le travail acharné apporte toujours des résultats.
+La famille est le trésor le plus précieux.
+Il n'est jamais trop tard pour apprendre.
+L'amitié véritable est un cadeau rare.
+Le respect et la tolérance sont fondamentaux.
+La nature nous offre paix et beauté.
+Apprendre de nos erreurs nous rend plus forts.
+La patience est une grande vertu.
+Chaque personne a un talent unique.
+L'amour et la compassion peuvent changer le monde.
+Quand on veut, on peut.
+C'est en forgeant qu'on devient forgeron.
+Le temps est notre ressource la plus précieuse.
+L'honnêteté est la base de tout.
+Ne renoncez jamais à vos rêves.
+La musique est le langage de l'âme.
+Chaque jour est une nouvelle opportunité.
+Hallo, Welt! Wie geht es dir heute?
+Wissen ist Macht und Bildung ist der Schlüssel zum Erfolg.
+Das Leben ist schön, wenn wir es mit geliebten Menschen teilen.
+Harte Arbeit bringt immer Ergebnisse.
+Die Familie ist unser kostbarster Schatz.
+Es ist nie zu spät, etwas Neues zu lernen.
+Wahre Freundschaft ist ein seltenes Geschenk.
+Respekt und Toleranz sind grundlegend.
+Die Natur schenkt uns Frieden und Schönheit.
+Aus Fehlern lernen macht uns stärker.
+Geduld ist eine große Tugend.
+Jeder Mensch hat ein einzigartiges Talent.
+Liebe und Mitgefühl können die Welt verändern.
+Wo ein Wille ist, ist auch ein Weg.
+Übung macht den Meister.
+Zeit ist unsere wertvollste Ressource.
+Ehrlichkeit ist die Grundlage von allem.
+Gib niemals deine Träume auf.
+Musik ist die Sprache der Seele.
+Jeder Tag ist eine neue Chance.
+こんにちは、世界！今日はいい天気ですね。
+知識は力であり、教育は成功への鍵です。
+愛する人と共有するとき、人生は美しいものです。
+努力は常に良い結果をもたらします。
+家族は最も貴重な宝物です。
+新しいことを学ぶのに遅すぎることはありません。
+真の友情は貴重な贈り物です。
+尊敬と寛容は非常に重要です。
+自然は私たちに平和と美しさを与えてくれます。
+間違いから学ぶことで、私たちはより強くなります。
+忍耐は偉大な美徳です。
+すべての人にはユニークな才能があります。
+愛と思いやりは世界を変えることができます。
+意志あるところに道は開ける。
+練習は完璧への道です。
+時間は最も貴重な資源です。
+正直さはすべての基礎です。
+決して夢をあきらめないでください。
+音楽は魂の言語です。
+毎日が新しいチャンスです。
+안녕하세요, 세계! 오늘 기분이 어떠세요?
+지식은 힘이고 교육은 성공의 열쇠입니다.
+사랑하는 사람들과 함께할 때 인생은 아름답습니다.
+노력은 항상 좋은 결과를 가져옵니다.
+가족은 가장 소중한 보물입니다.
+새로운 것을 배우기에 늦은 때란 없습니다.
+진정한 우정은 귀한 선물입니다.
+존중과 관용은 매우 중요합니다.
+자연은 우리에게 평화와 아름다움을 줍니다.
+실수로부터 배우면 더 강해집니다.
+인내는 위대한 미덕입니다.
+모든 사람은 독특한 재능을 가지고 있습니다.
+사랑과 연민은 세상을 바꿀 수 있습니다.
+뜻이 있는 곳에 길이 있다.
+연습이 완벽을 만든다.
+시간은 가장 소중한 자원입니다.
+정직은 모든 것의 기초입니다.
+결코 꿈을 포기하지 마세요.
+음악은 영혼의 언어입니다.
+매일이 새로운 기회입니다.
+Ciao, mondo! Come stai oggi?
+La conoscenza è potere e l'istruzione è fondamentale.
+La vita è bella quando la condividiamo con chi amiamo.
+Il duro lavoro porta sempre risultati.
+La famiglia è il tesoro più prezioso.
+Non è mai troppo tardi per imparare.
+La vera amicizia è un dono raro.
+Il rispetto e la tolleranza sono essenziali.
+La natura ci offre pace e bellezza.
+Imparare dagli errori ci rende più forti.
+La pazienza è una grande virtù.
+Ogni persona ha un talento unico.
+L'amore e la compassione possono cambiare il mondo.
+Volere è potere.
+La pratica rende perfetti.
+Il tempo è la nostra risorsa più preziosa.
+L'onestà è la base di tutto.
+Non rinunciare mai ai tuoi sogni.
+La musica è il linguaggio dell'anima.
+Ogni giorno è una nuova opportunità.
+Merhaba dünya! Bugün nasılsınız?
+Bilgi güçtür ve eğitim başarının anahtarıdır.
+Sevdiklerimizle paylaştığımızda hayat güzeldir.
+Sıkı çalışma her zaman sonuç verir.
+Aile en değerli hazinedir.
+Yeni bir şey öğrenmek için asla geç değildir.
+Gerçek dostluk nadir bir hediyedir.
+Saygı ve hoşgörü çok önemlidir.
+Doğa bize huzur ve güzellik sunar.
+Hatalardan öğrenmek bizi daha güçlü yapar.
+Sabır büyük bir erdemdir.
+Her insanın benzersiz bir yeteneği vardır.
+Sevgi ve merhamet dünyayı değiştirebilir.
+Dileyen dilesini bulur.
+Pratik mükemmelleştirir.
+Zaman en değerli kaynağımızdır.
+Dürüstlük her şeyin temelidir.
+Asla hayallerinden vazgeçme.
+Müzik ruhun dilidir.
+Her gün yeni bir fırsattır.
+Xin chào thế giới! Hôm nay bạn thế nào?
+Kiến thức là sức mạnh và giáo dục là chìa khóa thành công.
+Cuộc sống đẹp khi chia sẻ với những người yêu thương.
+Làm việc chăm chỉ luôn mang lại kết quả tốt.
+Gia đình là kho báu quý giá nhất.
+Không bao giờ là quá muộn để học hỏi.
+Tình bạn chân thực là món quà hiếm có.
+Tôn trọng và kh관용 rất quan trọng.
+Thiên nhiên mang lại cho chúng ta bình yên và vẻ đẹp.
+Học từ sai lầm giúp chúng ta mạnh mẽ hơn.
+Kiên nhẫn là một đức tính cao quý.
+Mỗi người đều có tài năng độc đáo.
+Tình yêu và lòng thương cảm có thể thay đổi thế giới.
+Có chí thì nên.
+Luyện tập tạo nên sự hoàn hảo.
+Thời gian là tài nguyên quý giá nhất.
+Trung thực là nền tảng của mọi thứ.
+Đừng bao giờ từ bỏ ước mơ.
+Âm nhạc là ngôn ngữ của tâm hồn.
+Mỗi ngày là một cơ hội mới.
+สวัสดีโลก! วันนี้คุณเป็นอย่างไร?
+ความรู้คือพลังและการศึกษาคือกุญแจสู่ความสำเร็จ
+ชีวิตสวยงามเมื่อเราแบ่งปันกับคนที่เรารัก
+การทำงานหนักมักนำมาซึ่งผลลัพธ์ที่ดี
+ครอบครัวคือสมบัติที่มีค่าที่สุด
+ไม่มีคำว่าสายเกินไปที่จะเรียนรู้สิ่งใหม่
+มิตรภาพที่แท้จริงเป็นของขวัญที่หายาก
+ความเคารพและความอดทนมีความสำคัญมาก
+ธรรมชาติมอบความสงบและความงามให้เรา
+การเรียนรู้จากความผิดพลาดทำให้เราแข็งแกร่งขึ้น
+ความอดทนเป็นคุณธรรมที่ยิ่งใหญ่
+ทุกคนมีความสามารถพิเศษที่ไม่เหมือนใคร
+ความรักและความเมตตาสามารถเปลี่ยนโลกได้
+มีความตั้งใจก็มีทาง
+การฝึกฝนนำไปสู่ความสมบูรณ์แบบ
+เวลาเป็นทรัพยากรที่มีค่าที่สุดของเรา
+ความซื่อสัตย์เป็นรากฐานของทุกสิ่ง
+อย่าเลิกล้มความฝันของคุณ
+ดนตรีคือภาษาของจิตวิญญาณ
+ทุกวันคือโอกาสใหม่
+Halo dunia! Apa kabar hari ini?
+Pengetahuan adalah kekuatan dan pendidikan adalah kunci sukses.
+Hidup indah ketika kita berbagi dengan orang yang kita cintai.
+Kerja keras selalu membawa hasil yang baik.
+Keluarga adalah harta yang paling berharga.
+Tidak pernah terlambat untuk belajar hal baru.
+Persahabatan sejati adalah hadiah yang langka.
+Rasa hormat dan toleransi sangat penting.
+Alam memberi kita kedamaian dan keindahan.
+Belajar dari kesalahan membuat kita lebih kuat.
+Kesabaran adalah kebajikan yang besar.
+Setiap orang memiliki bakat yang unik.
+Cinta dan kasih sayang dapat mengubah dunia.
+Di mana ada kemauan di situ ada jalan.
+Latihan membuat sempurna.
+Waktu adalah sumber daya paling berharga kita.
+Kejujuran adalah dasar dari segalanya.
+Jangan pernah menyerah pada impianmu.
+Musik adalah bahasa jiwa.
+Setiap hari adalah kesempatan baru.
+Kumusta mundo! Kumusta ka ngayong araw?
+Ang kaalaman ay kapangyarihan at ang edukasyon ay susi sa tagumpay.
+Maganda ang buhay kapag ibinabahagi natin ito sa mga mahal natin.
+Ang sipag at tiyaga ay laging nagbubunga ng magandang resulta.
+Ang pamilya ay ang pinakamahalagang kayamanan.
+Hindi kailanman huli para matuto ng bagong bagay.
+Ang tunay na pagkakaibigan ay bihirang kaloob.
+Ang paggalang at pagtitiis ay napakahalaga.
+Ang kalikasan ay nagbibigay sa atin ng kapayapaan at kagandahan.
+Ang pag-aaral mula sa mga pagkakamali ay nagpapalakas sa atin.
+Ang pasensya ay dakilang katangian.
+Bawat tao ay may natatanging talento.
+Ang pag-ibig at habag ay maaaring magbago ng mundo.
+Kung may tiyaga may nilaga.
+Ang pagsasanay ay nagtuturo ng kahusayan.
+Ang oras ay ang pinakamahalagang yaman natin.
+Ang katapatan ay pundasyon ng lahat.
+Huwag kailanman sumuko sa iyong mga pangarap.
+Ang musika ay wika ng kaluluwa.
+Bawat araw ay bagong pagkakataon.
+Γεια σου κόσμε! Πώς είσαι σήμερα;
+Η γνώση είναι δύναμη και η εκπαίδευση είναι το κλειδί της επιτυχίας.
+Η ζωή είναι όμορφη όταν τη μοιραζόμαστε με αυτούς που αγαπάμε.
+Η σκληρή δουλειά πάντα φέρνει αποτελέσματα.
+Η οικογένεια είναι ο πιο πολύτιμος θησαυρός.
+Ποτέ δεν είναι αργά να μάθεις κάτι νέο.
+Η αληθινή φιλία είναι ένα σπάνιο δώρο.
+Ο σεβασμός και η ανοχή είναι πολύ σημαντικά.
+Η φύση μας προσφέρει γαλήνη και ομορφιά.
+Το να μαθαίνουμε από τα λάθη μας μας κάνει δυνατότερους.
+Η υπομονή είναι μεγάλη αρετή.
+Κάθε άνθρωπος έχει ένα μοναδικό ταλέντο.
+Η αγάπη και η συμπόνια μπορούν να αλλάξουν τον κόσμο.
+Όπου υπάρχει θέληση υπάρχει και τρόπος.
+Η εξάσκηση οδηγεί στην τελειότητα.
+Ο χρόνος είναι ο πιο πολύτιμος πόρος μας.
+Η ειλικρίνεια είναι η βάση των πάντων.
+Μην τα παρατάς ποτέ τα όνειρά σου.
+Η μουσική είναι η γλώσσα της ψυχής.
+Κάθε μέρα είναι μια νέα ευκαιρία.
+Hej världen! Hur mår du idag?
+Kunskap är makt och utbildning är nyckeln till framgång.
+Livet är vackert när vi delar det med dem vi älskar.
+Hårt arbete ger alltid resultat.
+Familjen är vår mest värdefulla skatt.
+Det är aldrig för sent att lära sig något nytt.
+Sann vänskap är en sällsynt gåva.
+Respekt och tolerans är mycket viktigt.
+Naturen ger oss fred och skönhet.
+Att lära av misstag gör oss starkare.
+Tålamod är en stor dygd.
+Varje person har en unik talang.
+Kärlek och medkänsla kan förändra världen.
+Där det finns vilja finns det en väg.
+Övning ger färdighet.
+Tid är vår mest värdefulla resurs.
+Ärlighet är grunden för allt.
+Ge aldrig upp dina drömmar.
+Musik är själens språk.
+Varje dag är en ny möjlighet.
+Hallo wereld! Hoe gaat het vandaag?
+Kennis is macht en onderwijs is de sleutel tot succes.
+Het leven is mooi als we het delen met degenen van wie we houden.
+Hard werken levert altijd resultaten op.
+Familie is de meest waardevolle schat.
+Het is nooit te laat om iets nieuws te leren.
+Echte vriendschap is een zeldzaam geschenk.
+Respect en tolerantie zijn zeer belangrijk.
+De natuur geeft ons vrede en schoonheid.
+Leren van fouten maakt ons sterker.
+Geduld is een grote deugd.
+Iedereen heeft een uniek talent.
+Liefde en medeleven kunnen de wereld veranderen.
+Waar een wil is, is een weg.
+Oefening baart kunst.
+Tijd is onze meest waardevolle bron.
+Eerlijkheid is de basis van alles.
+Geef nooit je dromen op.
+Muziek is de taal van de ziel.
+Elke dag is een nieuwe kans.
+Cześć świecie! Jak się masz dzisiaj?
+Wiedza to potęga, a edukacja to klucz do sukcesu.
+Życie jest piękne, kiedy dzielimy je z tymi, których kochamy.
+Ciężka praca zawsze przynosi rezultaty.
+Rodzina jest najcenniejszym skarbem.
+Nigdy nie jest za późno, aby nauczyć się czegoś nowego.
+Prawdziwa przyjaźń to rzadki dar.
+Szacunek i tolerancja są bardzo ważne.
+Natura daje nam spokój i piękno.
+Uczenie się na błędach czyni nas silniejszymi.
+Cierpliwość to wielka cnota.
+Każdy człowiek ma unikalny talent.
+Miłość i współczucie mogą zmienić świat.
+Gdzie chcieć, tam sposób.
+Praktyka czyni mistrza.
+Czas jest naszym najcenniejszym zasobem.
+Uczciwość jest podstawą wszystkiego.
+Nigdy nie rezygnuj ze swoich marzeń.
+Muzyka jest językiem duszy.
+Każdy dzień to nowa szansa.
+Привіт, світе! Як справи сьогодні?
+Знання — це сила, а освіта — ключ до успіху.
+Життя прекрасне, коли ми ділимося ним з коханими.
+Наполеглива праця завжди приносить результати.
+Сім'я — найцінніший скарб.
+Ніколи не пізно вчитися чомусь новому.
+Справжня дружба — рідкісний дар.
+Повага і терпимість дуже важливі.
+Природа дарує нам спокій і красу.
+Вчитися на помилках робить нас сильнішими.
+Терпіння — велика чеснота.
+Кожна людина має унікальний талант.
+Любов і співчуття можуть змінити світ.
+Де хотіння, там і дорога.
+Практика веде до досконалості.
+Час — найцінніший ресурс.
+Чесність — основа всього.
+Ніколи не здавайтеся.
+Музика — мова душі.
+Кожен день — нова можливість.
+Olá mundo! Como você está hoje?
+O conhecimento é poder e a educação é fundamental.
+A vida é bela quando compartilhamos com quem amamos.
+O trabalho árduo sempre traz resultados.
+A família é o tesouro mais precioso.
+Nunca é tarde demais para aprender algo novo.
+A verdadeira amizade é um presente raro.
+O respeito e a tolerância são muito importantes.
+A natureza nos oferece paz e beleza.
+Aprender com os erros nos torna mais fortes.
+A paciência é uma grande virtude.
+Cada pessoa tem um talento único.
+O amor e a compaixão podem mudar o mundo.
+Onde há vontade, há um caminho.
+A prática leva à perfeição.
+O tempo é nosso recurso mais valioso.
+A honestidade é a base de tudo.
+Nunca desista dos seus sonhos.
+A música é a linguagem da alma.
+Cada dia é uma nova oportunidade.
+Hei verden! Hvordan har du det i dag?
+Kunnskap er makt og utdanning er nøkkelen til suksess.
+Livet er vakkert når vi deler det med dem vi elsker.
+Hardt arbeid gir alltid resultater.
+Familie er vår mest verdifulle skatt.
+Det er aldri for sent å lære noe nytt.
+Ekte vennskap er en sjelden gave.
+Respekt og toleranse er veldig viktig.
+Naturen gir oss fred og skjønnhet.
+Å lære av feil gjør oss sterkere.
+Tålmodighet er en stor dyd.
+Hver person har et unikt talent.
+Kjærlighet og medfølelse kan endre verden.
+Hvor det er vilje, er det en vei.
+Øvelse gjør mester.
+Tid er vår mest verdifulle ressurs.
+Ærlighet er grunnlaget for alt.
+Gi aldri opp drømmene dine.
+Musikk er sjelens språk.
+Hver dag er en ny mulighet.
+Hei maailma! Miten voit tänään?
+Tieto on voimaa ja koulutus on avain menestykseen.
+Elämä on kaunista, kun jaamme sen rakkaiden kanssa.
+Kova työ tuottaa aina tuloksia.
+Perhe on arvokkain aarteemme.
+Ei ole koskaan liian myöhäistä oppia jotain uutta.
+Aito ystävyys on harvinainen lahja.
+Kunnioitus ja suvaitsevaisuus ovat erittäin tärkeitä.
+Luonto antaa meille rauhaa ja kauneutta.
+Virheistä oppiminen tekee meistä vahvempia.
+Kärsivällisyys on suuri hyve.
+Jokaisella ihmisellä on ainutlaatuinen lahjakkuus.
+Rakkaus ja myötätunto voivat muuttaa maailman.
+Missä on tahto, siellä on tie.
+Harjoitus tekee mestarin.
+Aika on arvokkain resurssimme.
+Rehellisyys on kaiken perusta.
+Älä koskaan luovu unelmistasi.
+Musiikki on sielun kieli.
+Jokainen päivä on uusi mahdollisuus.
+Salam dunia! Apa khabar hari ini?
+Ilmu adalah kuasa dan pendidikan adalah kunci kejayaan.
+Hidup indah bila kita berkongsi dengan orang tersayang.
+Kerja keras sentiasa membawa hasil yang baik.
+Keluarga adalah harta yang paling berharga.
+Tidak pernah terlambat untuk belajar sesuatu yang baru.
+Persahabatan sejati adalah hadiah yang jarang.
+Hormat dan toleransi sangat penting.
+Alam semula jadi memberi kita ketenangan dan keindahan.
+Belajar daripada kesilapan menjadikan kita lebih kuat.
+Kesabaran adalah kebajikan yang besar.
+Setiap orang mempunyai bakat yang unik.
+Cinta dan belas kasihan boleh mengubah dunia.
+Di mana ada kemahuan, di situ ada jalan.
+Latihan menjadikan sempurna.
+Masa adalah sumber kita yang paling berharga.
+Kejujuran adalah asas segala-galanya.
+Jangan sekali-kali berputus asa dengan impian anda.
+Muzik adalah bahasa jiwa.
+Setiap hari adalah peluang baru.
+Sannu duniya! Yaya ka yau?
+Ilimi shine ƙarfi kuma ilimi shine mabuɗin nasara.
+Rayuwa tana da kyau lokacin da muke raba ta da waɗanda muke ƙauna.
+Aiki tuƙuru koyaushe yana kawo sakamako mai kyau.
+Iyali shine dukiya mafi daraja.
+Ba a taɓa yin makara don koyan sabon abu ba.
+Abota na gaskiya kyauta ce mai wuyar samu.
+Girmamawa da haƙuri suna da matuƙar muhimmanci.
+Yanayi yana ba mu kwanciyar hankali da kyau.
+Koyo daga kura-kurai yana mai da mu ƙarfi.
+Haƙuri babbar hali ce.
+Kowane mutum yana da ƙwarewa ta musamman.
+Ƙauna da tausayi na iya canza duniya.
+Inda akwai nufin, akwai hanya.
+Aiki yana ƙara gwaninta.
+Lokaci shine albarkar mu mafi daraja.
+Gaskiya ita ce tushen komai.
+Kada ka taɓa barin burinka.
+Kiɗa harshen rai ne.
+Kowace rana sabuwar dama ce.
+হ্যালো বিশ্ব! আজ তুমি কেমন আছ?
+জ্ঞানই শক্তি এবং শিক্ষাই সাফল্যের চাবিকাঠি।
+জীবন সুন্দর হয় যখন আমরা প্রিয়জনদের সাথে তা ভাগ করি।
+কঠোর পরিশ্রম সবসময় ভালো ফলাফল দেয়।
+পরিবার হলো আমাদের সবচেয়ে মূল্যবান সম্পদ।
+নতুন কিছু শেখার জন্য কখনো দেরি হয় না।
+প্রকৃত বন্ধুত্ব একটি দুর্লভ উপহার।
+সম্মান এবং সহনশীলতা খুবই গুরুত্বপূর্ণ।
+প্রকৃতি আমাদের শান্তি এবং সৌন্দর্য দেয়।
+ভুল থেকে শিখলে আমরা আরো শক্তিশালী হই।
+ধৈর্য একটি মহান গুণ।
+প্রতিটি মানুষের একটি অনন্য প্রতিভা আছে।
+ভালোবাসা এবং করুণা পৃথিবী বদলাতে পারে।
+যেখানে ইচ্ছা সেখানে উপায়।
+অনুশীলন নিখুঁততা আনে।
+সময় আমাদের সবচেয়ে মূল্যবান সম্পদ।
+সততা সবকিছুর ভিত্তি।
+কখনো তোমার স্বপ্ন ছেড়ে দিও না।
+সঙ্গীত হলো আত্মার ভাষা।
+প্রতিটি দিন একটি নতুন সুযোগ।
+ہیلو دنیا! آج آپ کیسے ہیں؟
+علم طاقت ہے اور تعلیم کامیابی کی کلید ہے۔
+زندگی خوبصورت ہے جب ہم اسے اپنے پیاروں کے ساتھ بانٹتے ہیں۔
+محنت ہمیشہ اچھے نتائج دیتی ہے۔
+خاندان سب سے قیمتی خزانہ ہے۔
+کچھ نیا سیکھنے میں کبھی دیر نہیں ہوتی۔
+سچی دوستی ایک نایاب تحفہ ہے۔
+احترام اور برداشت بہت اہم ہے۔
+فطرت ہمیں سکون اور خوبصورتی دیتی ہے۔
+غلطیوں سے سیکھنا ہمیں مضبوط بناتا ہے۔
+صبر ایک بڑی خوبی ہے۔
+ہر شخص میں ایک منفرد صلاحیت ہوتی ہے۔
+محبت اور ہمدردی دنیا کو بدل سکتی ہے۔
+جہاں چاہ وہاں راہ۔
+مشق سے کمال حاصل ہوتا ہے۔
+وقت ہمارا سب سے قیمتی وسیلہ ہے۔
+ایمانداری ہر چیز کی بنیاد ہے۔
+کبھی اپنے خوابوں سے دستبردار نہ ہو۔
+موسیقی روح کی زبان ہے۔
+ہر دن ایک نیا موقع ہے۔
+سلام دنیا! امروز چطوری؟
+دانش قدرت است و آموزش کلید موفقیت است.
+زندگی زیباست وقتی آن را با عزیزانمان به اشتراک بگذاریم.
+کار سخت همیشه نتایج خوبی به همراه دارد.
+خانواده گرانبهاترین گنج ماست.
+هرگز برای یادگیری چیز جدید دیر نیست.
+دوستی واقعی هدیه‌ای نادر است.
+احترام و تحمل بسیار مهم است.
+طبیعت آرامش و زیبایی به ما می‌بخشد.
+یادگیری از اشتباهات ما را قوی‌تر می‌کند.
+صبر فضیلت بزرگی است.
+هر فردی استعداد منحصر به فردی دارد.
+عشق و شفقت می‌توانند دنیا را تغییر دهند.
+جایی که اراده هست راه هست.
+تمرین به کمال می‌رساند.
+زمان با ارزش‌ترین منبع ماست.
+صداقت پایه همه چیز است.
+هرگز رویاهایت را رها نکن.
+موسیقی زبان روح است.
+هر روز فرصت جدیدی است.
+Сайн байна уу дэлхий! Өнөөдөр яаж байна?
+Мэдлэг бол хүч, боловсрол бол амжилтын түлхүүр.
+Амьдрал гоёмсог байдаг, бид хайртай хүмүүстэйгээ хуваалцдаг үед.
+Шаргуу хөдөлмөр үргэлж сайн үр дүн авчирдаг.
+Гэр бүл бол хамгийн үнэтэй эрдэнэс.
+Шинэ зүйл сурахад хэзээ ч оройтдоггүй.
+Жинхэнэ нөхөрлөл бол ховор бэлэг.
+Хүндэтгэл ба тэвчээр маш чухал.
+Байгаль бидэнд амар амгалан, гоо сайхныг өгдөг.
+Алдаанаасаа суралцах нь биднийг хүчирхэг болгодог.
+Тэвчээр бол агуу сайн чанар.
+Хүн бүр өвөрмөц авьяастай байдаг.
+Хайр, энэрэл нь дэлхийг өөрчилж чадна.
+Хүсэл байхад арга гардаг.
+Дадлага төгс болгоно.
+Цаг хугацаа бол бидний хамгийн үнэтэй нөөц.
+Үнэнч шудрага байдал бол бүх зүйлийн үндэс.
+Мөрөөдлөөсөө хэзээ ч бүү татгал.
+Хөгжим бол сэтгэлийн хэл.
+Өдөр бүр шинэ боломж.
+Здравей свят! Как си днес?
+Знанието е сила и образованието е ключът към успеха.
+Животът е красив, когато го споделяме с любимите.
+Упоритият труд винаги носи резултати.
+Семейството е най-ценното съкровище.
+Никога не е късно да научим нещо нов��.
+Истинската приятелство е рядък дар.
+Уважението и толерантността са много важни.
+Природата ни дава спокойствие и красота.
+Ученето от грешките ни прави по-силни.
+Търпението е голяма добродетел.
+Всеки човек има уникален талант.
+Любовта и състраданието могат да променят света.
+Където има воля, има и начин.
+Практиката води до съвършенство.
+Времето е нашият най-ценен ресурс.
+Честността е основата на всичко.
+Никога не се отказвай от мечтите си.
+Музиката е езикът на душата.
+Всеки ден е нова възможност.
+Pozdrav svijete! Kako si danas?
+Znanje je moć i obrazovanje je ključ uspjeha.
+Život je lijep kada ga dijelimo s onima koje volimo.
+Marljiv rad uvijek donosi rezultate.
+Obitelj je najdragocjenije blago.
+Nikada nije kasno naučiti nešto novo.
+Pravo prijateljstvo je rijedak dar.
+Poštovanje i tolerancija su vrlo važni.
+Priroda nam daje mir i ljepotu.
+Učenje iz grešaka čini nas jačima.
+Strpljenje je velika vrlina.
+Svaka osoba ima jedinstven talent.
+Ljubav i suosjećanje mogu promijeniti svijet.
+Gdje ima volje, tu je i načina.
+Vježba čini majstora.
+Vrijeme je naš najdragocjeniji resurs.
+Iskrenost je temelj svega.
+Nikada ne odustaj od svojih snova.
+Glazba je jezik duše.
+Svaki dan je nova prilika.
+Ahoj svete! Ako sa dnes máš?
+Vedomosti sú sila a vzdelanie je kľúčom k úspechu.
+Život je krásny, keď ho zdieľame s tými, ktorých milujeme.
+Usilovná práca vždy prináša výsledky.
+Rodina je najcennejší poklad.
+Nikdy nie je neskoro naučiť sa niečo nové.
+Pravé priateľstvo je vzácny dar.
+Úcta a tolerancia sú veľmi dôležité.
+Príroda nám dáva pokoj a krásu.
+Učenie sa z chýb nás robí silnejšími.
+Trpezlivosť je veľká čnosť.
+Každý človek má jedinečný talent.
+Láska a súcit môžu zmeniť svet.
+Kde je vôľa, tam je cesta.
+Cvičenie robí majstra.
+Čas je náš najcennejší zdroj.
+Úprimnosť je základom všetkého.
+Nikdy sa nevzdávaj svojich snov.
+Hudba je jazykom duše.
+Každý deň je nová príležitosť.
+Halo wêreld! Hoe gaan dit vandag?
+Kennis is mag en onderwys is die sleutel tot sukses.
+Die lewe is mooi wanneer ons dit met geliefdes deel.
+Hard werk lewer altyd resultate.
+Familie is die waardevolste skat.
+Dit is nooit te laat om iets nuuts te leer nie.
+Ware vriendskap is 'n seldsame geskenk.
+Respek en verdraagsaamheid is baie belangrik.
+Die natuur gee ons vrede en skoonheid.
+Om van foute te leer maak ons sterker.
+Geduld is 'n groot deug.
+Elke persoon het 'n unieke talent.
+Liefde en medelye kan die wêreld verander.
+Waar daar 'n wil is, is daar 'n weg.
+Oefening maak volmaak.
+Tyd is ons waardevolste hulpbron.
+Eerlikheid is die grondslag van alles.
+Moenie ooit jou drome opgee nie.
+Musiek is die taal van die siel.
+Elke dag is 'n nuwe geleentheid.
+Habari dunia! Habari gani leo?
+Maarifa ni nguvu na elimu ni ufunguo wa mafanikio.
+Maisha ni mazuri tunapoyashiriki na wapendwa wetu.
+Kazi ngumu daima huleta matokeo mazuri.
+Familia ni hazina yetu ya thamani zaidi.
+Haijachelewa kujifunza kitu kipya.
+Urafiki wa kweli ni zawadi adimu.
+Heshima na uvumilivu ni muhimu sana.
+Asili inatupa amani na uzuri.
+Kujifunza kutokana na makosa kunatufanya kuwa imara zaidi.
+Uvumilivu ni wema mkubwa.
+Kila mtu ana kipaji cha kipekee.
+Upendo na huruma vinaweza kubadilisha dunia.
+Pale ipo nia kuna njia.
+Mazoezi hufanya ustadi.
+Muda ni rasilimali yetu ya thamani zaidi.
+Uaminifu ni msingi wa kila kitu.
+Usiacha kamwe ndoto zako.
+Muziki ni lugha ya roho.
+Kila siku ni fursa mpya.
+Hello world! Welcome to the future of space exploration.
+Science and technology are advancing at an incredible pace.
+The stars are calling, and we must answer.
+Exploration is in our DNA, it's what makes us human.
+Together we can achieve the impossible.
+Innovation drives progress and changes lives.
+The universe is vast and full of wonders.
+Curiosity leads us to new discoveries.
+Teamwork makes the dream work.
+Never stop learning, never stop growing.
