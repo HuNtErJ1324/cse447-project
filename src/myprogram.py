@@ -8,6 +8,7 @@ import pickle
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from datasets import load_dataset
 
 
 # ---------------------------------------------------------------------- #
@@ -162,21 +163,38 @@ class MyModel:
     # ------------------------------------------------------------------ #
 
     @classmethod
-    def load_training_data(cls):
+    def load_training_data(cls, max_samples=10000):
         """
         Load training data for n-gram model and future fine-tuning.
         Reads example/corpus.txt to demonstrate n-gram capabilities.
         """
         data = []
-        for path in ["data/corpus.txt", "example/corpus.txt"]:
-            if os.path.exists(path):
-                print("  Reading corpus from {}".format(path))
-                with open(path, encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            data.append(line)
+
+        dataset = load_dataset("uonlp/CulturaX", "en", split="train", streaming=True)
+        count = 0
+        for example in dataset:
+            text = example.get("text", "")
+            if text:
+                lines = text.split("\n")
+                for line in lines:
+                    line = line.strip()
+                    if line:
+                        data.append(line)
+                        count += 1
+                        
+                        if count >= max_samples:
+                            break
+            
+            if count >= max_samples:
+                break
+            
+            # Progress indicator
+            if count % 10000 == 0:
+                print("    Loaded {} samples...".format(count))
+        
+        print("  Loaded {} text samples from CulturaX".format(len(data)))
         return data
+                
 
     @classmethod
     def load_test_data(cls, fname):

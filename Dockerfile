@@ -4,4 +4,4 @@ WORKDIR /job
 VOLUME ["/job/data", "/job/src", "/job/work", "/job/output"]
 
 # Install dependencies for TinyLlama model
-RUN pip install transformers sentencepiece accelerate
+RUN pip install transformers sentencepiece accelerate datasets
