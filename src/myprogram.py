@@ -323,6 +323,7 @@ class MyModel:
         supp_files = [
             "data/train.txt", "data/apollo-docs.txt", "data/claude-generated.txt",
             "data/gemini-generated.txt", "data/multilingual.txt",
+            "data/multilingual_generated.txt", "data/multilingual_large.txt",
         ]
         for sf in supp_files:
             if os.path.exists(sf):
@@ -457,8 +458,8 @@ class MyModel:
             if result is not None:
                 ngram_pred, confidence = result
 
-                # Blend with word n-gram model at word boundaries
-                if inp and inp[-1] == ' ' and confidence < 0.75 and self.word_ngram_model.trained:
+                # Blend with word n-gram model at word boundaries (only when very uncertain)
+                if inp and inp[-1] == ' ' and confidence < 0.50 and self.word_ngram_model.trained:
                     words = inp.split()
                     word_pred = self.word_ngram_model.predict(words, k=3)
                     if word_pred:
