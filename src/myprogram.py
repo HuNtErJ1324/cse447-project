@@ -27,7 +27,7 @@ class NgramModel:
     ~200ms per prediction) and works well for common patterns.
     """
 
-    def __init__(self, max_n=7, min_n=2):
+    def __init__(self, max_n=8, min_n=2):
         self.max_n = max_n
         self.min_n = min_n
         # counts[n][context_string] = {next_char: count}
@@ -39,13 +39,22 @@ class NgramModel:
         """
         Train on a list of text strings. Extracts all character n-grams
         and counts (context → next_char) frequencies.
+        Prunes low-frequency entries periodically to control memory.
         """
-        for text in texts:
+        PRUNE_INTERVAL = 25000  # prune every N texts
+        PRUNE_MIN_COUNT = 3     # remove entries with count < this during pruning
+
+        for t_idx, text in enumerate(texts):
             for n in range(self.min_n, self.max_n + 1):
                 for i in range(len(text) - n):
                     context = text[i:i + n - 1]
                     next_char = text[i + n - 1]
                     self.counts[n][context][next_char] += 1
+
+            # Periodic pruning to control memory
+            if (t_idx + 1) % PRUNE_INTERVAL == 0:
+                self._prune(PRUNE_MIN_COUNT)
+                print("  Processed {} texts, pruned singletons...".format(t_idx + 1))
 
         self.trained = True
         total = sum(
@@ -54,51 +63,98 @@ class NgramModel:
         )
         print("  N-gram model trained: {} total n-gram counts".format(total))
 
+    def _prune(self, min_count=2):
+        """Remove n-gram entries where all char counts are below min_count."""
+        for n in list(self.counts.keys()):
+            contexts_to_remove = []
+            for ctx, chars in self.counts[n].items():
+                # Remove individual chars below threshold
+                to_del = [ch for ch, cnt in chars.items() if cnt < min_count]
+                for ch in to_del:
+                    del chars[ch]
+                if not chars:
+                    contexts_to_remove.append(ctx)
+            for ctx in contexts_to_remove:
+                del self.counts[n][ctx]
+
     def predict(self, context, k=3, min_count=1):
         """
-        Predict top-k next characters for the given context string.
+        Predict top-k next characters using weighted backoff.
 
-        Backs off from longest n-gram to shortest. Returns None if no
-        n-gram has sufficient counts (falls back to neural model).
-
-        Args:
-            context:   the input string
-            k:         number of predictions to return
-            min_count: minimum total count required to trust the n-gram
+        When the best (longest) matching n-gram has sparse data (< 50 total),
+        also incorporates shorter n-gram orders with diminishing weights.
+        This helps when long contexts are rare but shorter ones are informative.
 
         Returns:
-            list of top-k characters, or None if n-gram can't predict
+            tuple of (list of top-k characters, confidence) or None
         """
         if not self.trained:
             return None
 
+        # Find the best matching n-gram order
+        best_n = None
+        best_total = 0
         for n in range(self.max_n, self.min_n - 1, -1):
             ctx_len = n - 1
             if len(context) < ctx_len:
                 continue
-
             ctx = context[-(ctx_len):]
-            char_counts = self.counts[n].get(ctx)
+            cc = self.counts[n].get(ctx)
+            if cc is not None:
+                total = sum(cc.values())
+                if total >= min_count:
+                    best_n = n
+                    best_total = total
+                    break
 
-            if char_counts is None:
-                continue
+        if best_n is None:
+            return None
 
-            total = sum(char_counts.values())
-            if total < min_count:
-                continue
-
-            # Sort by frequency
+        # If the best match has plenty of data, use it directly (fast path)
+        if best_total >= 50:
+            ctx = context[-(best_n - 1):]
+            char_counts = self.counts[best_n][ctx]
             sorted_chars = sorted(char_counts.items(),
                                   key=lambda x: x[1], reverse=True)
             top = [ch for ch, cnt in sorted_chars[:k]]
-
-            # Pad if needed
+            top3_count = sum(cnt for _, cnt in sorted_chars[:min(k, 3)])
+            confidence = top3_count / best_total
             while len(top) < k:
                 top.append("e")
+            return top, confidence
 
-            return top
+        # Sparse best match: blend with shorter n-gram orders
+        char_scores = defaultdict(float)
+        for n in range(best_n, self.min_n - 1, -1):
+            ctx_len = n - 1
+            if len(context) < ctx_len:
+                continue
+            ctx = context[-(ctx_len):]
+            cc = self.counts[n].get(ctx)
+            if cc is None:
+                continue
+            total = sum(cc.values())
+            if total < min_count:
+                continue
+            # Higher-order gets exponentially more weight
+            weight = 4.0 ** (n - self.min_n)
+            for ch, cnt in cc.items():
+                char_scores[ch] += weight * (cnt / total)
 
-        return None
+        if not char_scores:
+            return None
+
+        sorted_chars = sorted(char_scores.items(),
+                              key=lambda x: x[1], reverse=True)
+        top = [ch for ch, score in sorted_chars[:k]]
+        total_score = sum(s for _, s in sorted_chars)
+        top3_score = sum(s for _, s in sorted_chars[:k])
+        confidence = top3_score / total_score if total_score > 0 else 0.0
+
+        while len(top) < k:
+            top.append("e")
+
+        return top, confidence
 
     def save(self, path):
         """Save n-gram counts to disk."""
@@ -130,6 +186,85 @@ class NgramModel:
 
 
 # ---------------------------------------------------------------------- #
+#  Word N-gram Model                                                      #
+# ---------------------------------------------------------------------- #
+
+class WordNgramModel:
+    """
+    Word-level n-gram model for predicting first character of next word.
+    Stores (word_context_tuple → {first_char_of_next_word: count}).
+    """
+
+    def __init__(self, max_n=3):
+        self.max_n = max_n
+        # counts[n][(w1,...,wn)] = {first_char: count}
+        self.counts = {n: defaultdict(lambda: defaultdict(int)) for n in range(1, max_n + 1)}
+        self.trained = False
+
+    def train(self, texts):
+        for text in texts:
+            words = text.split()
+            for i in range(len(words)):
+                if not words[i]:
+                    continue
+                first_char = words[i][0]
+                for n in range(1, self.max_n + 1):
+                    if i < n:
+                        continue
+                    ctx = tuple(w.lower() for w in words[i - n:i])
+                    self.counts[n][ctx][first_char] += 1
+        self.trained = True
+        # Prune low-count entries
+        for n in list(self.counts.keys()):
+            to_del = [ctx for ctx, chars in self.counts[n].items()
+                      if sum(chars.values()) < 2]
+            for ctx in to_del:
+                del self.counts[n][ctx]
+
+    def predict(self, context_words, k=3):
+        """Predict top-k first chars of next word given context words."""
+        if not self.trained:
+            return None
+        char_scores = defaultdict(float)
+        for n in range(self.max_n, 0, -1):
+            if len(context_words) < n:
+                continue
+            ctx = tuple(w.lower() for w in context_words[-n:])
+            cc = self.counts[n].get(ctx)
+            if cc is None:
+                continue
+            total = sum(cc.values())
+            weight = 4.0 ** (n - 1)
+            for ch, cnt in cc.items():
+                char_scores[ch] += weight * (cnt / total)
+        if not char_scores:
+            return None
+        sorted_chars = sorted(char_scores.items(), key=lambda x: x[1], reverse=True)
+        top = [ch for ch, _ in sorted_chars[:k]]
+        return top
+
+    def save(self, path):
+        data = {"max_n": self.max_n, "trained": self.trained,
+                "counts": {n: {str(ctx): dict(chars) for ctx, chars in cd.items()}
+                           for n, cd in self.counts.items()}}
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
+
+    @classmethod
+    def load(cls, path):
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        model = cls(max_n=data["max_n"])
+        model.trained = data["trained"]
+        for n, cd in data["counts"].items():
+            for ctx_str, chars in cd.items():
+                ctx = eval(ctx_str) if isinstance(ctx_str, str) else ctx_str
+                for ch, cnt in chars.items():
+                    model.counts[int(n)][ctx][ch] = cnt
+        return model
+
+
+# ---------------------------------------------------------------------- #
 #  Main Model (Hybrid: N-gram + TinyLlama)                                #
 # ---------------------------------------------------------------------- #
 
@@ -147,13 +282,14 @@ class MyModel:
     DEFAULT_MODEL_NAME = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
 
     def __init__(self, model=None, tokenizer=None, model_name=None, device=None,
-                 token_to_first_char=None, ngram_model=None):
+                 token_to_first_char=None, ngram_model=None, word_ngram_model=None):
         self.model_name = model_name or self.DEFAULT_MODEL_NAME
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.tokenizer = tokenizer
         self.token_to_first_char = token_to_first_char or {}
         self.ngram_model = ngram_model or NgramModel()
+        self.word_ngram_model = word_ngram_model or WordNgramModel()
 
         # Latency tracking
         self.latency_log = []  # list of (input, method, time_ms)
@@ -177,7 +313,7 @@ class MyModel:
                     line = line.strip()
                     if line:
                         data.append(line)
-                    if i >= 100000:
+                    if i >= 200000:
                         break
             print("  Loaded {} lines from main corpus".format(len(data)))
         else:
@@ -230,6 +366,8 @@ class MyModel:
         if data:
             print("  Training n-gram model on {} texts...".format(len(data)))
             self.ngram_model.train(data)
+            print("  Training word n-gram model...")
+            self.word_ngram_model.train(data)
         else:
             print("  No training data provided — n-gram model will be empty")
 
@@ -311,32 +449,59 @@ class MyModel:
         ngram_count = 0
         llm_indices = []
 
-        # Phase 1: N-gram predictions
+        # Phase 1: N-gram predictions (with confidence-based LLM fallback)
+        # Phase 1: N-gram predictions with word model blending
         for i, inp in enumerate(data):
             t0 = time.perf_counter()
-            ngram_pred = self.ngram_model.predict(inp, k=3)
-            if ngram_pred is not None:
-                preds[i] = "".join(ngram_pred)
+            result = self.ngram_model.predict(inp, k=5)
+            if result is not None:
+                ngram_pred, confidence = result
+
+                # Blend with word n-gram model at word boundaries
+                if inp and inp[-1] == ' ' and confidence < 0.75 and self.word_ngram_model.trained:
+                    words = inp.split()
+                    word_pred = self.word_ngram_model.predict(words, k=3)
+                    if word_pred:
+                        # Replace 3rd char prediction with top word model prediction
+                        # that isn't already in char top-2
+                        top2 = list(ngram_pred[:2])
+                        added = False
+                        for wch in word_pred:
+                            if wch not in top2:
+                                top2.append(wch)
+                                added = True
+                                break
+                        if not added and len(ngram_pred) >= 3:
+                            top2.append(ngram_pred[2])
+                        while len(top2) < 3:
+                            top2.append("e")
+                        preds[i] = "".join(top2[:3])
+                    else:
+                        preds[i] = "".join(ngram_pred[:3])
+                else:
+                    preds[i] = "".join(ngram_pred[:3])
+
                 ngram_count += 1
                 elapsed_ms = (time.perf_counter() - t0) * 1000
                 self.latency_log.append((inp[:30], "ngram", elapsed_ms))
             else:
                 llm_indices.append(i)
 
-        # Phase 2: Batched LLM predictions
+        # Phase 2: Batched LLM predictions (pure fallback + ensemble for low-conf ngram)
         llm_count = len(llm_indices)
         if llm_indices:
             self._ensure_model_loaded()
             batch_size = 8
             for batch_start in range(0, len(llm_indices), batch_size):
                 batch_idx = llm_indices[batch_start:batch_start + batch_size]
-                batch_contexts = [data[i][-512:] for i in batch_idx]  # truncate to last 512 chars
+                batch_contexts = [data[i][-512:] for i in batch_idx]
                 t0 = time.perf_counter()
-                batch_results = self._predict_top_chars_llm_batch(batch_contexts, k=3)
+                batch_results = self._predict_top_chars_llm_batch(batch_contexts, k=5)
                 elapsed_ms = (time.perf_counter() - t0) * 1000
                 per_item_ms = elapsed_ms / len(batch_idx)
                 for j, idx in enumerate(batch_idx):
-                    preds[idx] = "".join(batch_results[j])
+                    llm_pred = batch_results[j]
+                    preds[idx] = "".join(llm_pred[:3])
                     self.latency_log.append((data[idx][:30], "llm", per_item_ms))
 
         print("  N-gram: {}, LLM: {}".format(ngram_count, llm_count))
@@ -451,6 +616,11 @@ class MyModel:
         self.ngram_model.save(ngram_path)
         print("  Saved n-gram model to {}".format(ngram_path))
 
+        # Save word n-gram model
+        word_ngram_path = os.path.join(work_dir, "word_ngram_model.pkl")
+        self.word_ngram_model.save(word_ngram_path)
+        print("  Saved word n-gram model to {}".format(word_ngram_path))
+
         # Copy the large training corpus to satisfying the 3GB checkpoint requirement
         # We assume the input data was at data/train_combined.txt
         src_corpus = "data/train_combined.txt"
@@ -525,6 +695,15 @@ class MyModel:
             ngram_model = NgramModel()
             print("  No n-gram model found — using TinyLlama only")
 
+        # Load word n-gram model
+        word_ngram_path = os.path.join(work_dir, "word_ngram_model.pkl")
+        if os.path.exists(word_ngram_path):
+            word_ngram_model = WordNgramModel.load(word_ngram_path)
+            print("  Loaded word n-gram model (trained={})".format(word_ngram_model.trained))
+        else:
+            word_ngram_model = WordNgramModel()
+            print("  No word n-gram model found")
+
         return cls(
             model=model,
             tokenizer=tokenizer,
@@ -532,6 +711,7 @@ class MyModel:
             device=device,
             token_to_first_char=token_to_first_char,
             ngram_model=ngram_model,
+            word_ngram_model=word_ngram_model,
         )
 
 
