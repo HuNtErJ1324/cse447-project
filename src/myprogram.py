@@ -9,6 +9,140 @@ from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
+import unicodedata
+
+
+# ---------------------------------------------------------------------- #
+#  Script Frequency Model                                                  #
+# ---------------------------------------------------------------------- #
+
+class ScriptFrequency:
+    """
+    Tracks character frequencies per Unicode script block.
+    Used to provide better fallback predictions than just 'e'.
+    """
+
+    # Map Unicode script names to buckets
+    SCRIPT_BUCKETS = {}  # populated dynamically
+
+    def __init__(self):
+        # script_name -> {char: count}
+        self.freq = defaultdict(lambda: defaultdict(int))
+
+    @staticmethod
+    def _get_script(ch):
+        """Get the Unicode script for a character."""
+        cp = ord(ch)
+        if cp < 0x0080:
+            return 'Latin'
+        if 0x0400 <= cp <= 0x04FF:
+            return 'Cyrillic'
+        if 0x0600 <= cp <= 0x06FF or 0x0750 <= cp <= 0x077F or 0xFB50 <= cp <= 0xFDFF:
+            return 'Arabic'
+        if 0x0900 <= cp <= 0x097F:
+            return 'Devanagari'
+        if 0x0980 <= cp <= 0x09FF:
+            return 'Bengali'
+        if 0x0370 <= cp <= 0x03FF:
+            return 'Greek'
+        if 0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF:
+            return 'CJK'
+        if 0xAC00 <= cp <= 0xD7AF:
+            return 'Korean'
+        if 0x0E00 <= cp <= 0x0E7F:
+            return 'Thai'
+        if 0x0A00 <= cp <= 0x0A7F:
+            return 'Gurmukhi'
+        if 0x0A80 <= cp <= 0x0AFF:
+            return 'Gujarati'
+        if 0x0B80 <= cp <= 0x0BFF:
+            return 'Tamil'
+        if 0x0C00 <= cp <= 0x0C7F:
+            return 'Telugu'
+        if 0x0080 <= cp <= 0x024F:
+            return 'Latin'  # Latin Extended
+        if 0x1100 <= cp <= 0x11FF or 0x3130 <= cp <= 0x318F:
+            return 'Korean'
+        if 0x3040 <= cp <= 0x309F or 0x30A0 <= cp <= 0x30FF:
+            return 'Japanese'
+        if 0x0590 <= cp <= 0x05FF:
+            return 'Hebrew'
+        if 0x10A0 <= cp <= 0x10FF:
+            return 'Georgian'
+        if 0x0530 <= cp <= 0x058F:
+            return 'Armenian'
+        # Vietnamese uses Latin with diacritics - already covered by Latin
+        try:
+            name = unicodedata.name(ch, '')
+            if 'LATIN' in name:
+                return 'Latin'
+            if 'CYRILLIC' in name:
+                return 'Cyrillic'
+            if 'ARABIC' in name:
+                return 'Arabic'
+        except ValueError:
+            pass
+        return 'Other'
+
+    def train(self, texts, max_texts=200000):
+        """Count character frequencies per script from training texts."""
+        for i, text in enumerate(texts):
+            if i >= max_texts:
+                break
+            for ch in text:
+                if ch.isspace():
+                    continue
+                script = self._get_script(ch)
+                self.freq[script][ch] += 1
+
+    def top_chars(self, script, k=5, exclude=None):
+        """Get top-k most frequent characters for a given script."""
+        if script not in self.freq:
+            return ['e', 'a', 'i', 'o', 'n'][:k]
+        exclude = set(exclude or [])
+        sorted_chars = sorted(self.freq[script].items(),
+                              key=lambda x: x[1], reverse=True)
+        result = []
+        for ch, _ in sorted_chars:
+            if ch not in exclude and ch.isprintable():
+                result.append(ch)
+                if len(result) >= k:
+                    break
+        while len(result) < k:
+            result.append('e')
+        return result
+
+    def get_fillers(self, context, first_pred, k=2):
+        """
+        Get k filler characters appropriate for the script of the context.
+        Excludes first_pred to avoid duplicates.
+        """
+        # Determine script from context
+        script = 'Latin'  # default
+        for ch in reversed(context):
+            if not ch.isspace() and ch.isprintable():
+                script = self._get_script(ch)
+                break
+
+        exclude = set(first_pred) if isinstance(first_pred, (list, str)) else set()
+        # Also exclude space for fillers
+        exclude.add(' ')
+        return self.top_chars(script, k=k, exclude=exclude)
+
+    def save(self, path):
+        data = {s: dict(chars) for s, chars in self.freq.items()}
+        with open(path, 'wb') as f:
+            pickle.dump(data, f)
+
+    @classmethod
+    def load(cls, path):
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        model = cls()
+        for s, chars in data.items():
+            for ch, cnt in chars.items():
+                model.freq[s][ch] = cnt
+        return model
 
 
 # ---------------------------------------------------------------------- #
@@ -295,7 +429,8 @@ class MyModel:
     DEFAULT_MODEL_NAME = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
 
     def __init__(self, model=None, tokenizer=None, model_name=None, device=None,
-                 token_to_first_char=None, ngram_model=None, word_ngram_model=None):
+                 token_to_first_char=None, ngram_model=None, word_ngram_model=None,
+                 script_freq=None):
         self.model_name = model_name or self.DEFAULT_MODEL_NAME
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
@@ -303,6 +438,7 @@ class MyModel:
         self.token_to_first_char = token_to_first_char or {}
         self.ngram_model = ngram_model or NgramModel()
         self.word_ngram_model = word_ngram_model or WordNgramModel()
+        self.script_freq = script_freq or ScriptFrequency()
 
         # Latency tracking
         self.latency_log = []  # list of (input, method, time_ms)
@@ -356,6 +492,8 @@ class MyModel:
             "data/opus_large.txt",
             "data/opus_large2.txt",
             "data/wiki_cjk_extra.txt",
+            "data/wiki_extra_langs.txt",
+            "data/wiki_extra_langs2.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
         for sf in bulk_files:
@@ -438,6 +576,8 @@ class MyModel:
             # Word n-gram only needs a small subset - it's a secondary signal
             word_data = data[:20000] if len(data) > 20000 else data
             self.word_ngram_model.train(word_data)
+            print("  Training script frequency model...")
+            self.script_freq.train(data)
         else:
             print("  No training data provided — n-gram model will be empty")
 
@@ -541,12 +681,34 @@ class MyModel:
                         if not added and len(ngram_pred) >= 3:
                             top2.append(ngram_pred[2])
                         while len(top2) < 3:
-                            top2.append("e")
+                            fillers = self.script_freq.get_fillers(inp, top2, k=3-len(top2))
+                            top2.extend(fillers[:3-len(top2)])
                         preds[i] = "".join(top2[:3])
                     else:
                         preds[i] = "".join(ngram_pred[:3])
                 else:
                     preds[i] = "".join(ngram_pred[:3])
+                
+                # Replace 'e' fillers with script-appropriate characters
+                pred_str = preds[i]
+                if len(pred_str) >= 3:
+                    chars = list(pred_str)
+                    replaced = False
+                    for pos in range(1, 3):  # positions 1 and 2
+                        if chars[pos] == 'e':
+                            # Check if context is non-Latin
+                            script = ScriptFrequency._get_script(
+                                next((c for c in reversed(inp) if not c.isspace() and c.isprintable()), 'a'))
+                            if script != 'Latin':
+                                fillers = self.script_freq.get_fillers(
+                                    inp, set(chars[:pos]), k=3)
+                                for fch in fillers:
+                                    if fch not in chars:
+                                        chars[pos] = fch
+                                        replaced = True
+                                        break
+                    if replaced:
+                        preds[i] = "".join(chars)
 
                 # Sentence-ending punctuation heuristic: ensure "." or "。" is in top-3
                 # when context looks like a complete sentence (but NOT if input ends with space)
@@ -814,6 +976,11 @@ class MyModel:
         self.word_ngram_model.save(word_ngram_path)
         print("  Saved word n-gram model to {}".format(word_ngram_path))
 
+        # Save script frequency model
+        script_freq_path = os.path.join(work_dir, "script_freq.pkl")
+        self.script_freq.save(script_freq_path)
+        print("  Saved script frequency model to {}".format(script_freq_path))
+
         # Note: corpus.txt copy skipped to save checkpoint space
         # The n-gram model pkl contains all learned patterns
 
@@ -885,6 +1052,15 @@ class MyModel:
             word_ngram_model = WordNgramModel()
             print("  No word n-gram model found")
 
+        # Load script frequency model
+        script_freq_path = os.path.join(work_dir, "script_freq.pkl")
+        if os.path.exists(script_freq_path):
+            script_freq = ScriptFrequency.load(script_freq_path)
+            print("  Loaded script frequency model")
+        else:
+            script_freq = ScriptFrequency()
+            print("  No script frequency model found")
+
         return cls(
             model=model,
             tokenizer=tokenizer,
@@ -893,6 +1069,7 @@ class MyModel:
             token_to_first_char=token_to_first_char,
             ngram_model=ngram_model,
             word_ngram_model=word_ngram_model,
+            script_freq=script_freq,
         )
 
 
