@@ -494,6 +494,8 @@ class MyModel:
             "data/wiki_cjk_extra.txt",
             "data/wiki_extra_langs.txt",
             "data/wiki_extra_langs2.txt",
+            "data/tatoeba_targeted2.txt",
+            "data/wiki_targeted.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
         for sf in bulk_files:
@@ -524,6 +526,7 @@ class MyModel:
             "data/targeted_fixes6.txt",
             "data/targeted_optimization.txt",
             "data/targeted_fixes7.txt",
+            "data/multilingual_boost.txt",
         ]
         TARGETED_REPEATS = 50  # repeat targeted data to boost their counts
         for sf in targeted_files:
