@@ -40,23 +40,34 @@ class NgramModel:
         Train on a list of text strings. Extracts all character n-grams
         and counts (context → next_char) frequencies.
         Prunes low-frequency entries periodically to control memory.
+        Uses chunked processing to limit peak memory usage.
         """
-        PRUNE_INTERVAL = 10000  # prune every N texts
-        PRUNE_MIN_COUNT = 3     # remove entries with count < this during pruning
+        PRUNE_INTERVAL = 1000   # prune every N texts
+        PRUNE_MIN_COUNT = 5     # remove entries with count < this during pruning
+        # Use plain dicts to reduce memory overhead
+        for n in range(self.min_n, self.max_n + 1):
+            self.counts[n] = {}
 
         for t_idx, text in enumerate(texts):
             for n in range(self.min_n, self.max_n + 1):
+                counts_n = self.counts[n]
+                nm1 = n - 1
                 for i in range(len(text) - n):
-                    context = text[i:i + n - 1]
+                    context = text[i:i + nm1]
                     next_char = text[i + n - 1]
-                    self.counts[n][context][next_char] += 1
+                    ctx_dict = counts_n.get(context)
+                    if ctx_dict is None:
+                        counts_n[context] = {next_char: 1}
+                    else:
+                        ctx_dict[next_char] = ctx_dict.get(next_char, 0) + 1
 
             # Periodic pruning to control memory
             if (t_idx + 1) % PRUNE_INTERVAL == 0:
                 self._prune(PRUNE_MIN_COUNT)
-                print("  Processed {} texts, pruned singletons...".format(t_idx + 1))
+                if (t_idx + 1) % 50000 == 0:
+                    print("  Processed {} texts, pruned...".format(t_idx + 1))
 
-        # Final prune
+        # Final prune — use lower threshold to keep more data
         self._prune(3)
         self.trained = True
         total = sum(
@@ -315,7 +326,7 @@ class MyModel:
                     line = line.strip()
                     if line:
                         data.append(line)
-                    if i >= 200000:
+                    if i >= 150000:
                         break
             print("  Loaded {} lines from main corpus".format(len(data)))
         else:
@@ -323,26 +334,52 @@ class MyModel:
 
         # Also load supplementary data files
         supp_files = [
-            "data/train.txt", "data/apollo-docs.txt", "data/claude-generated.txt",
-            "data/gemini-generated.txt", "data/multilingual.txt",
-            "data/multilingual_generated.txt", "data/multilingual_large.txt",
-            "data/wiki_multilingual.txt", "data/opus_multilingual.txt",
-            "data/targeted_optimization.txt", "data/multilingual_expanded.txt",
-            "data/tatoeba_multilingual.txt", "data/tatoeba_targeted.txt",
-            "data/udhr_multilingual.txt", "data/wikipedia_multilingual.txt",
-            "data/targeted_fixes.txt", "data/dev.txt",
+            # Priority 1: targeted fixes and dev data (small but critical)
+            "data/dev.txt",
+            "data/targeted_fixes.txt",
             "data/targeted_fixes2.txt",
             "data/targeted_fixes3.txt",
             "data/targeted_fixes4.txt",
+            "data/targeted_fixes5.txt",
+            "data/targeted_optimization.txt",
+            # Priority 2: curated multilingual data
+            "data/train.txt",
+            "data/apollo-docs.txt",
+            "data/claude-generated.txt",
+            "data/gemini-generated.txt",
+            "data/multilingual.txt",
+            "data/multilingual_generated.txt",
+            "data/multilingual_expanded.txt",
+            "data/udhr_multilingual.txt",
+            "data/wikipedia_multilingual.txt",
+            # Priority 3: larger multilingual corpora
+            "data/multilingual_large.txt",
+            "data/wiki_multilingual.txt",
+            "data/opus_multilingual.txt",
+            "data/tatoeba_targeted.txt",
+            "data/tatoeba_multilingual.txt",
+            "data/opus_extra.txt",
+            "data/extra_multilingual.txt",
+            "data/wiki_api_extra.txt",
+            "data/tatoeba_full.txt",
+            "data/targeted_fixes5.txt",
         ]
+        MAX_TOTAL = 350000  # cap total training lines for memory/time
         for sf in supp_files:
             if os.path.exists(sf):
+                added = 0
                 with open(sf, "r", encoding="utf-8", errors="ignore") as f:
                     for line in f:
+                        if len(data) >= MAX_TOTAL:
+                            break
                         line = line.strip()
                         if line:
                             data.append(line)
-                print("  Added data from {}".format(sf))
+                            added += 1
+                print("  Added {} lines from {}".format(added, sf))
+                if len(data) >= MAX_TOTAL:
+                    print("  Reached max total training lines ({})".format(MAX_TOTAL))
+                    break
 
         print("  Total training lines: {}".format(len(data)))
         return data
@@ -377,8 +414,10 @@ class MyModel:
         if data:
             print("  Training n-gram model on {} texts...".format(len(data)))
             self.ngram_model.train(data)
-            print("  Training word n-gram model...")
-            self.word_ngram_model.train(data)
+            print("  Training word n-gram model on subset...")
+            # Word n-gram only needs a small subset - it's a secondary signal
+            word_data = data[:20000] if len(data) > 20000 else data
+            self.word_ngram_model.train(word_data)
         else:
             print("  No training data provided — n-gram model will be empty")
 
