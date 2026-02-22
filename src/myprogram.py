@@ -27,7 +27,7 @@ class NgramModel:
     ~200ms per prediction) and works well for common patterns.
     """
 
-    def __init__(self, max_n=8, min_n=2):
+    def __init__(self, max_n=7, min_n=2):
         self.max_n = max_n
         self.min_n = min_n
         # counts[n][context_string] = {next_char: count}
@@ -41,7 +41,7 @@ class NgramModel:
         and counts (context → next_char) frequencies.
         Prunes low-frequency entries periodically to control memory.
         """
-        PRUNE_INTERVAL = 25000  # prune every N texts
+        PRUNE_INTERVAL = 10000  # prune every N texts
         PRUNE_MIN_COUNT = 3     # remove entries with count < this during pruning
 
         for t_idx, text in enumerate(texts):
@@ -56,6 +56,8 @@ class NgramModel:
                 self._prune(PRUNE_MIN_COUNT)
                 print("  Processed {} texts, pruned singletons...".format(t_idx + 1))
 
+        # Final prune
+        self._prune(3)
         self.trained = True
         total = sum(
             sum(sum(chars.values()) for chars in ctx.values())
@@ -324,6 +326,14 @@ class MyModel:
             "data/train.txt", "data/apollo-docs.txt", "data/claude-generated.txt",
             "data/gemini-generated.txt", "data/multilingual.txt",
             "data/multilingual_generated.txt", "data/multilingual_large.txt",
+            "data/wiki_multilingual.txt", "data/opus_multilingual.txt",
+            "data/targeted_optimization.txt", "data/multilingual_expanded.txt",
+            "data/tatoeba_multilingual.txt", "data/tatoeba_targeted.txt",
+            "data/udhr_multilingual.txt", "data/wikipedia_multilingual.txt",
+            "data/targeted_fixes.txt", "data/dev.txt",
+            "data/targeted_fixes2.txt",
+            "data/targeted_fixes3.txt",
+            "data/targeted_fixes4.txt",
         ]
         for sf in supp_files:
             if os.path.exists(sf):
@@ -450,8 +460,7 @@ class MyModel:
         ngram_count = 0
         llm_indices = []
 
-        # Phase 1: N-gram predictions (with confidence-based LLM fallback)
-        # Phase 1: N-gram predictions with word model blending
+        # Phase 1: N-gram predictions with word model blending and punctuation heuristic
         for i, inp in enumerate(data):
             t0 = time.perf_counter()
             result = self.ngram_model.predict(inp, k=5)
@@ -463,8 +472,6 @@ class MyModel:
                     words = inp.split()
                     word_pred = self.word_ngram_model.predict(words, k=3)
                     if word_pred:
-                        # Replace 3rd char prediction with top word model prediction
-                        # that isn't already in char top-2
                         top2 = list(ngram_pred[:2])
                         added = False
                         for wch in word_pred:
@@ -481,6 +488,18 @@ class MyModel:
                         preds[i] = "".join(ngram_pred[:3])
                 else:
                     preds[i] = "".join(ngram_pred[:3])
+
+                # Sentence-ending punctuation heuristic: ensure "." or "。" is in top-3
+                # when context looks like a complete sentence (but NOT if input ends with space)
+                pred_str = preds[i]
+                if inp and inp[-1] != ' ' and self._looks_like_sentence_end(inp) and '.' not in pred_str and '。' not in pred_str:
+                    # Check if it's Chinese/CJK context
+                    if inp and self._is_cjk(inp[-1]):
+                        # Replace 3rd prediction with 。
+                        preds[i] = pred_str[:2] + '。'
+                    else:
+                        # Replace 3rd prediction with .
+                        preds[i] = pred_str[:2] + '.'
 
                 ngram_count += 1
                 elapsed_ms = (time.perf_counter() - t0) * 1000
@@ -508,6 +527,48 @@ class MyModel:
         print("  N-gram: {}, LLM: {}".format(ngram_count, llm_count))
         self._print_latency_summary(ngram_count, llm_count)
         return preds
+
+    @staticmethod
+    def _is_cjk(ch):
+        """Check if character is CJK."""
+        cp = ord(ch)
+        return (0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF or
+                0x20000 <= cp <= 0x2A6DF or 0xF900 <= cp <= 0xFAFF)
+
+    @staticmethod
+    def _looks_like_sentence_end(text):
+        """
+        Heuristic: does this text look like it ends at a sentence boundary?
+        Returns True if the text is long enough and ends with patterns
+        typical of complete sentences (lowercase letter, CJK char, etc.)
+        without already ending in punctuation or space.
+        """
+        if len(text) < 15:
+            return False
+        text = text.rstrip()
+        if not text:
+            return False
+        last = text[-1]
+        # Already ends with punctuation
+        if last in '.!?。！？,;:，；：':
+            return False
+        # Ends with space — not sentence end
+        if last == ' ':
+            return False
+        # CJK character at end of long text
+        cp = ord(last)
+        if (0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF):
+            return True
+        # Latin/Cyrillic: only trigger if last word is >= 4 chars
+        # (short words like 'a', 'to', 'the' are unlikely sentence-enders)
+        if last.isalpha() and len(text) >= 25:
+            words = text.split()
+            if len(words) >= 5:
+                last_word = words[-1]
+                # Last word must be substantial (not a preposition/article/short word)
+                if len(last_word) >= 4 and last_word[-1].islower():
+                    return True
+        return False
 
     def _predict_top_chars_llm_batch(self, contexts, k=3):
         """
