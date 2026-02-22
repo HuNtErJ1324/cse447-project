@@ -355,6 +355,7 @@ class MyModel:
             "data/wiki_large.txt",
             "data/opus_large.txt",
             "data/opus_large2.txt",
+            "data/wiki_cjk_extra.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
         for sf in bulk_files:
@@ -563,7 +564,15 @@ class MyModel:
                 elapsed_ms = (time.perf_counter() - t0) * 1000
                 self.latency_log.append((inp[:30], "ngram", elapsed_ms))
             else:
-                llm_indices.append(i)
+                # Try script-aware defaults before falling back to LLM
+                script_defaults = self._get_script_defaults(inp)
+                if script_defaults:
+                    preds[i] = "".join(script_defaults[:3])
+                    ngram_count += 1
+                    elapsed_ms = (time.perf_counter() - t0) * 1000
+                    self.latency_log.append((inp[:30], "script", elapsed_ms))
+                else:
+                    llm_indices.append(i)
 
         # Phase 2: Batched LLM predictions (pure fallback + ensemble for low-conf ngram)
         llm_count = len(llm_indices)
@@ -585,6 +594,70 @@ class MyModel:
         print("  N-gram: {}, LLM: {}".format(ngram_count, llm_count))
         self._print_latency_summary(ngram_count, llm_count)
         return preds
+
+    @staticmethod
+    def _get_script_defaults(text):
+        """
+        Get common default characters based on the script of the last character(s).
+        Returns top-3 most common chars for that script, or None.
+        """
+        if not text:
+            return None
+        # Find last non-space char
+        last = text.rstrip()
+        if not last:
+            return None
+        ch = last[-1]
+        cp = ord(ch)
+        
+        # Arabic script
+        if 0x0600 <= cp <= 0x06FF or 0x0750 <= cp <= 0x077F or 0xFB50 <= cp <= 0xFDFF:
+            return ['ا', ' ', 'ل']
+        # Devanagari (Hindi, Marathi, Nepali)
+        if 0x0900 <= cp <= 0x097F:
+            return ['ा', ' ', 'े']
+        # Bengali
+        if 0x0980 <= cp <= 0x09FF:
+            return ['া', ' ', 'ে']
+        # CJK
+        if 0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF:
+            return ['的', '了', '是']
+        # Korean
+        if 0xAC00 <= cp <= 0xD7AF or 0x1100 <= cp <= 0x11FF:
+            return ['는', '이', ' ']
+        # Cyrillic
+        if 0x0400 <= cp <= 0x04FF:
+            return ['а', 'о', 'е']
+        # Greek
+        if 0x0370 <= cp <= 0x03FF:
+            return ['α', 'ο', 'ε']
+        # Thai
+        if 0x0E00 <= cp <= 0x0E7F:
+            return ['า', 'ร', 'น']
+        # Georgian
+        if 0x10A0 <= cp <= 0x10FF:
+            return ['ა', 'ი', 'ე']
+        # Urdu/Extended Arabic
+        if 0x0600 <= cp <= 0x08FF:
+            return ['ا', ' ', 'ی']
+        # Tamil
+        if 0x0B80 <= cp <= 0x0BFF:
+            return ['ா', ' ', 'ி']
+        # Telugu
+        if 0x0C00 <= cp <= 0x0C7F:
+            return ['ా', ' ', 'ి']
+        # Gujarati
+        if 0x0A80 <= cp <= 0x0AFF:
+            return ['ા', ' ', 'ે']
+        # Gurmukhi (Punjabi)
+        if 0x0A00 <= cp <= 0x0A7F:
+            return ['ਾ', ' ', 'ੀ']
+        
+        # Latin - most common
+        if ch.isascii() and ch.isalpha():
+            return ['e', ' ', 'a']
+        
+        return None
 
     @staticmethod
     def _is_cjk(ch):
