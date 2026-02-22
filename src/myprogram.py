@@ -363,6 +363,7 @@ class MyModel:
             "data/wiki_api_extra.txt",
             "data/tatoeba_full.txt",
             "data/targeted_fixes5.txt",
+            "data/targeted_fixes6.txt",
         ]
         MAX_TOTAL = 350000  # cap total training lines for memory/time
         for sf in supp_files:
