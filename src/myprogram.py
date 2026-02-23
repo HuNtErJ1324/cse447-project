@@ -176,7 +176,7 @@ class NgramModel:
         Prunes low-frequency entries periodically to control memory.
         Uses chunked processing to limit peak memory usage.
         """
-        PRUNE_INTERVAL = 1000   # prune every N texts
+        PRUNE_INTERVAL = 2000   # prune every N texts
         PRUNE_MIN_COUNT = 5     # remove entries with count < this during pruning
         # Use plain dicts to reduce memory overhead
         for n in range(self.min_n, self.max_n + 1):
@@ -496,6 +496,11 @@ class MyModel:
             "data/wiki_extra_langs2.txt",
             "data/tatoeba_targeted2.txt",
             "data/wiki_targeted.txt",
+            "data/wiki_diverse.txt",
+            "data/wiki_diverse_large.txt",
+            "data/wikiann_multilingual.txt",
+            "data/tatoeba_api.txt",
+            "data/tatoeba_api_large.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
         for sf in bulk_files:
