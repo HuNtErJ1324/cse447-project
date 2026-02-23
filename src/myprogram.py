@@ -8,7 +8,6 @@ import pickle
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from datasets import load_dataset
 import unicodedata
 
 
@@ -501,6 +500,9 @@ class MyModel:
             "data/wikiann_multilingual.txt",
             "data/tatoeba_api.txt",
             "data/tatoeba_api_large.txt",
+            "data/wiki_underrep.txt",
+            "data/wiki_underrep2.txt",
+            "data/wiki_underrep_combined.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
         for sf in bulk_files:
@@ -744,6 +746,23 @@ class MyModel:
                 else:
                     llm_indices.append(i)
 
+        # Phase 1b: Also send very low-confidence n-gram predictions to LLM
+        # for ensemble/verification (only if we won't exceed time budget)
+        low_conf_indices = []
+        for i, inp in enumerate(data):
+            if preds[i] is not None:
+                result = self.ngram_model.predict(inp, k=5)
+                if result is not None:
+                    _, confidence = result
+                    # Very low confidence and short context match = unreliable
+                    if confidence < 0.20:
+                        low_conf_indices.append(i)
+        
+        # Only ensemble if total LLM calls would be manageable (< 50)
+        if len(llm_indices) + len(low_conf_indices) < 50:
+            llm_indices.extend(low_conf_indices)
+        low_conf_set = set(low_conf_indices)
+
         # Phase 2: Batched LLM predictions (pure fallback + ensemble for low-conf ngram)
         llm_count = len(llm_indices)
         if llm_indices:
@@ -758,8 +777,28 @@ class MyModel:
                 per_item_ms = elapsed_ms / len(batch_idx)
                 for j, idx in enumerate(batch_idx):
                     llm_pred = batch_results[j]
-                    preds[idx] = "".join(llm_pred[:3])
-                    self.latency_log.append((data[idx][:30], "llm", per_item_ms))
+                    # If we already have an n-gram prediction, ensemble
+                    if preds[idx] is not None and idx in low_conf_set:
+                        ngram_chars = list(preds[idx])
+                        # Use LLM's top prediction as 1st, keep n-gram's best as 2nd
+                        ensemble = []
+                        for ch in llm_pred:
+                            if ch not in ensemble:
+                                ensemble.append(ch)
+                            if len(ensemble) >= 2:
+                                break
+                        for ch in ngram_chars:
+                            if ch not in ensemble:
+                                ensemble.append(ch)
+                            if len(ensemble) >= 3:
+                                break
+                        while len(ensemble) < 3:
+                            ensemble.append('e')
+                        preds[idx] = "".join(ensemble[:3])
+                        self.latency_log.append((data[idx][:30], "ensemble", per_item_ms))
+                    else:
+                        preds[idx] = "".join(llm_pred[:3])
+                        self.latency_log.append((data[idx][:30], "llm", per_item_ms))
 
         print("  N-gram: {}, LLM: {}".format(ngram_count, llm_count))
         self._print_latency_summary(ngram_count, llm_count)
