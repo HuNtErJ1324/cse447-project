@@ -21,7 +21,7 @@
 ### Round 1: Speed (Low-Hanging Fruit) ⏱️
 **Goal:** Dramatically reduce processing time while keeping accuracy stable.
 
-- [ ] **Lazy-load TinyLlama** — only load if N-gram actually misses. If N-gram handles 100% of dev, skip LLM entirely. Save 5-10s model load time.
+- [x] **Lazy-load TinyLlama** — only load if N-gram actually misses. ✅ 12.8s → 2.9s (77% faster). Also deferred torch/transformers imports.
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
 - [ ] **Compress N-gram pickle** — use `protocol=pickle.HIGHEST_PROTOCOL`, or switch to a trie/MARISA-trie for faster lookup + smaller footprint.
 - [ ] **Remove unused imports** at test time (e.g., `unicodedata` used only in training).
@@ -68,6 +68,7 @@
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-02-22 | Created plan | CP3 due Feb 26, need structured approach |
+| 2026-02-22 | Lazy-load TinyLlama + defer torch imports | 12.8s → 2.9s (77% faster). N-gram handles 100% of dev, LLM never loads. Accuracy unchanged at 100%. |
 
 ---
 
