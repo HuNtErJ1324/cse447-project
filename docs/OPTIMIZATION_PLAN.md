@@ -25,14 +25,14 @@
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
 - [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster).
 - [x] **Remove unused imports** at test time — lazy-import `unicodedata` (only needed in rare ScriptFrequency fallback). ✅ Minor speedup.
-- [ ] **Reduce N-gram orders** — test whether orders 2-5 (drop 6-7) lose much accuracy. Fewer orders = faster lookup + smaller model.
+- [x] **Reduce N-gram orders** — tested dropping orders 6-7: accuracy drops to 89.3% (12 misses on dev). REJECTED — orders 6-7 are essential.
 - [ ] **Quantize TinyLlama to int8/int4** — use `bitsandbytes` or `torch.quantization` for faster inference if LLM is needed.
 
 ### Round 2: Accuracy (Closing Gaps) 🎯
 **Goal:** Reduce error rate on unseen multilingual test data.
 
 - [ ] **Evaluate on held-out multilingual data** — create a proper eval set beyond the 112-sample dev. Sample from UDHR, Tatoeba, Wikipedia in 20+ languages.
-- [ ] **Increase N-gram coverage** — the real test will have languages not in dev. Ensure CJK, Arabic, Devanagari, Cyrillic, Thai, Korean n-grams are well-represented.
+- [x] **Increase N-gram coverage** — the real test will have languages not in dev. Ensure CJK, Arabic, Devanagari, Cyrillic, Thai, Korean n-grams are well-represented. ✅ Added 54K Wikipedia lines across 27 languages via HF streaming.
 - [ ] **Better script detection → better fallback** — current `_get_script_defaults` is hand-coded. Train script-specific unigram/bigram fallbacks from data.
 - [ ] **Smarter LLM fallback trigger** — instead of confidence < 0.20, tune the threshold on a diverse eval set.
 - [ ] **Add a BPE/SentencePiece character model** — lightweight alternative to full TinyLlama, trained on the multilingual corpus. Could replace TinyLlama entirely for speed.
@@ -70,6 +70,9 @@
 | 2026-02-22 | Created plan | CP3 due Feb 26, need structured approach |
 | 2026-02-22 | Lazy-load TinyLlama + defer torch imports | 12.8s → 2.9s (77% faster). N-gram handles 100% of dev, LLM never loads. Accuracy unchanged at 100%. |
 | 2026-02-22 | Fast NgramModel.load + lazy unicodedata | 3.66s → 2.0s (45% faster). Skip defaultdict rebuild, use plain dicts directly. Accuracy unchanged at 100%. |
+| 2026-02-23 | Add 54K Wikipedia lines (27 langs) | Incremental n-gram update, pruned to 42.7MB. Dev: 100%, ~2.3s. Coverage improved for all target scripts. |
+| 2026-02-23 | Tested dropping orders 6-7 | REJECTED: accuracy drops to 89.3% (12 misses). Orders 6-7 are essential for longer pattern matching. |
+| 2026-02-23 | Reduced TARGETED_REPEATS 80→40, MAX_TOTAL 2M→1.5M | Memory safety: full retrain was OOM-killed at 2M lines. Incremental update approach used instead. |
 
 ---
 
