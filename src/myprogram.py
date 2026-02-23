@@ -315,6 +315,33 @@ class NgramModel:
 
         return top, confidence
 
+    def prune_for_inference(self):
+        """Aggressively prune low-frequency entries to reduce model size and load time.
+        
+        Higher-order n-grams with very few observations are unlikely to help
+        at inference time (they'll rarely match), so we can safely remove them.
+        This dramatically reduces pickle size and deserialization time.
+        """
+        # Minimum total count thresholds per order
+        # Lower orders are kept more aggressively (they're the backoff targets)
+        thresholds = {
+            2: 1, 3: 2, 4: 5, 5: 8, 6: 8, 7: 8
+        }
+        total_removed = 0
+        for n, ctx_dict in list(self.counts.items()):
+            thresh = thresholds.get(n, 5)
+            before = len(ctx_dict)
+            self.counts[n] = {
+                ctx: chars for ctx, chars in ctx_dict.items()
+                if sum(chars.values()) >= thresh
+            }
+            removed = before - len(self.counts[n])
+            total_removed += removed
+            if removed > 0:
+                print("  Order {}: pruned {} -> {} contexts (removed {})".format(
+                    n, before, len(self.counts[n]), removed))
+        print("  Total contexts removed: {}".format(total_removed))
+
     def save(self, path):
         """Save n-gram counts to disk."""
         # Convert defaultdicts to normal dicts for pickling
@@ -1076,8 +1103,10 @@ class MyModel:
         with open(config_path, "wt", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
 
-        # Save n-gram model
+        # Save n-gram model (prune for inference first to reduce size/load time)
         ngram_path = os.path.join(work_dir, "ngram_model.pkl")
+        print("  Pruning n-gram model for inference...")
+        self.ngram_model.prune_for_inference()
         self.ngram_model.save(ngram_path)
         print("  Saved n-gram model to {}".format(ngram_path))
 
