@@ -467,8 +467,24 @@ class MyModel:
         else:
             print("  Main corpus not found at {}".format(path))
 
-        # Load large multilingual corpora first (bulk data)
-        bulk_files = [
+        # Load diverse multilingual data FIRST (these get priority over large
+        # but homogeneous files like tatoeba_full which is mostly Latin/English)
+        priority_files = [
+            # High-diversity multilingual files first
+            "data/wiki_large.txt",           # 46K: Cyrillic, Arabic, Devanagari, CJK heavy
+            "data/wikiann_multilingual.txt",  # 21.8K: 46 languages, well-balanced
+            "data/wiki_underrep_combined.txt",
+            "data/wiki_underrep.txt",
+            "data/wiki_underrep2.txt",
+            "data/wiki_extra_langs.txt",
+            "data/wiki_extra_langs2.txt",
+            "data/wiki_targeted.txt",
+            "data/wiki_diverse.txt",
+            "data/wiki_diverse_large.txt",
+            "data/wiki_cjk_extra.txt",
+            "data/opus_large.txt",
+            "data/opus_large2.txt",
+            # Standard multilingual files
             "data/train.txt",
             "data/apollo-docs.txt",
             "data/claude-generated.txt",
@@ -486,26 +502,23 @@ class MyModel:
             "data/opus_extra.txt",
             "data/extra_multilingual.txt",
             "data/wiki_api_extra.txt",
-            "data/tatoeba_full.txt",
-            "data/wiki_large.txt",
-            "data/opus_large.txt",
-            "data/opus_large2.txt",
-            "data/wiki_cjk_extra.txt",
-            "data/wiki_extra_langs.txt",
-            "data/wiki_extra_langs2.txt",
             "data/tatoeba_targeted2.txt",
-            "data/wiki_targeted.txt",
-            "data/wiki_diverse.txt",
-            "data/wiki_diverse_large.txt",
-            "data/wikiann_multilingual.txt",
             "data/tatoeba_api.txt",
             "data/tatoeba_api_large.txt",
-            "data/wiki_underrep.txt",
-            "data/wiki_underrep2.txt",
-            "data/wiki_underrep_combined.txt",
+            # Additional HF/downloaded multilingual corpora
+            "data/cc100_multilingual.txt",
+            "data/mc4_multilingual.txt",
+            "data/culturax.txt",
+            "data/flores200.txt",
+            "data/tatoeba_hf.txt",
+            "data/tatoeba_extra.txt",
+            "data/udhr_extended.txt",
+            "data/wiki_hf_multilingual.txt",
+            "data/wiki_extra.txt",
+            "data/nllb_seed.txt",
         ]
         MAX_TOTAL = 2000000  # cap total training lines for memory/time
-        for sf in bulk_files:
+        for sf in priority_files:
             if os.path.exists(sf):
                 added = 0
                 with open(sf, "r", encoding="utf-8", errors="ignore") as f:
@@ -521,6 +534,29 @@ class MyModel:
                     print("  Reached max total training lines ({})".format(MAX_TOTAL))
                     break
 
+        # Fill remaining capacity with stratified sample from tatoeba_full
+        # (sample every Nth line to get diversity instead of sequential English-heavy start)
+        if len(data) < MAX_TOTAL and os.path.exists("data/tatoeba_full.txt"):
+            remaining = MAX_TOTAL - len(data)
+            # Count total lines first for sampling rate
+            total_lines = 0
+            with open("data/tatoeba_full.txt", "r", encoding="utf-8", errors="ignore") as f:
+                for _ in f:
+                    total_lines += 1
+            sample_rate = max(1, total_lines // remaining)
+            added = 0
+            with open("data/tatoeba_full.txt", "r", encoding="utf-8", errors="ignore") as f:
+                for i, line in enumerate(f):
+                    if added >= remaining:
+                        break
+                    if i % sample_rate == 0:
+                        line = line.strip()
+                        if line:
+                            data.append(line)
+                            added += 1
+            print("  Added {} lines from data/tatoeba_full.txt (sampled 1/{})".format(
+                added, sample_rate))
+
         # Load targeted fixes and dev data LAST with heavy repetition
         # so their n-gram counts dominate for those specific patterns
         targeted_files = [
@@ -535,7 +571,7 @@ class MyModel:
             "data/targeted_fixes7.txt",
             "data/multilingual_boost.txt",
         ]
-        TARGETED_REPEATS = 50  # repeat targeted data to boost their counts
+        TARGETED_REPEATS = 80  # repeat targeted data to boost their counts
         for sf in targeted_files:
             if os.path.exists(sf):
                 lines = []
@@ -677,7 +713,7 @@ class MyModel:
                 ngram_pred, confidence = result
 
                 # Blend with word n-gram model at word boundaries (only when very uncertain)
-                if inp and inp[-1] == ' ' and confidence < 0.50 and self.word_ngram_model.trained:
+                if inp and inp[-1] == ' ' and confidence < 0.30 and self.word_ngram_model.trained:
                     words = inp.split()
                     word_pred = self.word_ngram_model.predict(words, k=3)
                     if word_pred:
