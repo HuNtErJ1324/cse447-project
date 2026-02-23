@@ -188,8 +188,8 @@ class NgramModel:
         Prunes low-frequency entries periodically to control memory.
         Uses chunked processing to limit peak memory usage.
         """
-        PRUNE_INTERVAL = 2000   # prune every N texts
-        PRUNE_MIN_COUNT = 5     # remove entries with count < this during pruning
+        PRUNE_INTERVAL = 1000   # prune every N texts
+        PRUNE_MIN_COUNT = 3     # remove entries with count < this during pruning
         # Use plain dicts to reduce memory overhead
         for n in range(self.min_n, self.max_n + 1):
             self.counts[n] = {}
@@ -531,8 +531,9 @@ class MyModel:
             "data/wiki_hf_multilingual.txt",
             "data/wiki_extra.txt",
             "data/nllb_seed.txt",
+            "data/wiki_hf_extra.txt",
         ]
-        MAX_TOTAL = 2000000  # cap total training lines for memory/time
+        MAX_TOTAL = 1500000  # cap total training lines for memory/time
         for sf in priority_files:
             if os.path.exists(sf):
                 added = 0
@@ -586,7 +587,7 @@ class MyModel:
             "data/targeted_fixes7.txt",
             "data/multilingual_boost.txt",
         ]
-        TARGETED_REPEATS = 80  # repeat targeted data to boost their counts
+        TARGETED_REPEATS = 40  # repeat targeted data to boost their counts
         for sf in targeted_files:
             if os.path.exists(sf):
                 lines = []
