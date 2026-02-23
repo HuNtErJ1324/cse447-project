@@ -24,6 +24,7 @@
 - [x] **Lazy-load TinyLlama** — only load if N-gram actually misses. ✅ 12.8s → 2.9s (77% faster). Also deferred torch/transformers imports.
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
 - [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster).
+- [x] **Inference pruning of n-gram model** — prune higher-order (5-7) n-grams with total count < 8; reduces pickle 44.8MB → 33.0MB. ✅ 2.0s → 1.6s (20% faster). Accuracy unchanged at 100%.
 - [x] **Remove unused imports** at test time — lazy-import `unicodedata` (only needed in rare ScriptFrequency fallback). ✅ Minor speedup.
 - [x] **Reduce N-gram orders** — tested dropping orders 6-7: accuracy drops to 89.3% (12 misses on dev). REJECTED — orders 6-7 are essential.
 - [ ] **Quantize TinyLlama to int8/int4** — use `bitsandbytes` or `torch.quantization` for faster inference if LLM is needed.
@@ -73,6 +74,7 @@
 | 2026-02-23 | Add 54K Wikipedia lines (27 langs) | Incremental n-gram update, pruned to 42.7MB. Dev: 100%, ~2.3s. Coverage improved for all target scripts. |
 | 2026-02-23 | Tested dropping orders 6-7 | REJECTED: accuracy drops to 89.3% (12 misses). Orders 6-7 are essential for longer pattern matching. |
 | 2026-02-23 | Reduced TARGETED_REPEATS 80→40, MAX_TOTAL 2M→1.5M | Memory safety: full retrain was OOM-killed at 2M lines. Incremental update approach used instead. |
+| 2026-02-23 | Inference pruning: per-order thresholds (orders 5-7 need count≥8) | 44.8MB→33.0MB pickle, 2.0s→1.6s (20% faster). Dev 100%. Added prune_for_inference() method. |
 
 ---
 
