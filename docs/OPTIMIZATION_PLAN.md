@@ -23,8 +23,8 @@
 
 - [x] **Lazy-load TinyLlama** — only load if N-gram actually misses. ✅ 12.8s → 2.9s (77% faster). Also deferred torch/transformers imports.
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
-- [ ] **Compress N-gram pickle** — use `protocol=pickle.HIGHEST_PROTOCOL`, or switch to a trie/MARISA-trie for faster lookup + smaller footprint.
-- [ ] **Remove unused imports** at test time (e.g., `unicodedata` used only in training).
+- [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster).
+- [x] **Remove unused imports** at test time — lazy-import `unicodedata` (only needed in rare ScriptFrequency fallback). ✅ Minor speedup.
 - [ ] **Reduce N-gram orders** — test whether orders 2-5 (drop 6-7) lose much accuracy. Fewer orders = faster lookup + smaller model.
 - [ ] **Quantize TinyLlama to int8/int4** — use `bitsandbytes` or `torch.quantization` for faster inference if LLM is needed.
 
@@ -69,6 +69,7 @@
 |------|----------|-----------|
 | 2026-02-22 | Created plan | CP3 due Feb 26, need structured approach |
 | 2026-02-22 | Lazy-load TinyLlama + defer torch imports | 12.8s → 2.9s (77% faster). N-gram handles 100% of dev, LLM never loads. Accuracy unchanged at 100%. |
+| 2026-02-22 | Fast NgramModel.load + lazy unicodedata | 3.66s → 2.0s (45% faster). Skip defaultdict rebuild, use plain dicts directly. Accuracy unchanged at 100%. |
 
 ---
 
