@@ -6,7 +6,7 @@ import random
 import pickle
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-import unicodedata
+# unicodedata imported lazily in ScriptFrequency._get_script if needed
 
 # Lazy imports for torch/transformers (heavy, only needed for LLM fallback)
 torch = None
@@ -84,6 +84,7 @@ class ScriptFrequency:
             return 'Armenian'
         # Vietnamese uses Latin with diacritics - already covered by Latin
         try:
+            import unicodedata
             name = unicodedata.name(ch, '')
             if 'LATIN' in name:
                 return 'Latin'
@@ -91,7 +92,7 @@ class ScriptFrequency:
                 return 'Cyrillic'
             if 'ARABIC' in name:
                 return 'Arabic'
-        except ValueError:
+        except (ValueError, ImportError):
             pass
         return 'Other'
 
@@ -327,7 +328,7 @@ class NgramModel:
             },
         }
         with open(path, "wb") as f:
-            pickle.dump(data, f)
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def load(cls, path):
@@ -336,10 +337,8 @@ class NgramModel:
             data = pickle.load(f)
         model = cls(max_n=data["max_n"], min_n=data["min_n"])
         model.trained = data["trained"]
-        for n, ctx_dict in data["counts"].items():
-            for ctx, chars in ctx_dict.items():
-                for ch, count in chars.items():
-                    model.counts[n][ctx][ch] = count
+        # Use plain dicts directly — predict() only uses .get()
+        model.counts = {int(n): ctx_dict for n, ctx_dict in data["counts"].items()}
         return model
 
 
@@ -403,10 +402,10 @@ class WordNgramModel:
 
     def save(self, path):
         data = {"max_n": self.max_n, "trained": self.trained,
-                "counts": {n: {str(ctx): dict(chars) for ctx, chars in cd.items()}
+                "counts": {n: {ctx: dict(chars) for ctx, chars in cd.items()}
                            for n, cd in self.counts.items()}}
         with open(path, "wb") as f:
-            pickle.dump(data, f)
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def load(cls, path):
@@ -415,10 +414,14 @@ class WordNgramModel:
         model = cls(max_n=data["max_n"])
         model.trained = data["trained"]
         for n, cd in data["counts"].items():
-            for ctx_str, chars in cd.items():
-                ctx = eval(ctx_str) if isinstance(ctx_str, str) else ctx_str
-                for ch, cnt in chars.items():
-                    model.counts[int(n)][ctx][ch] = cnt
+            n = int(n)
+            loaded = {}
+            for ctx_key, chars in cd.items():
+                if isinstance(ctx_key, str):
+                    import ast
+                    ctx_key = ast.literal_eval(ctx_key)
+                loaded[ctx_key] = chars
+            model.counts[n] = loaded
         return model
 
 
