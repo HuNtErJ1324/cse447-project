@@ -2,13 +2,25 @@
 import os
 import json
 import time
-import torch
 import random
 import pickle
 from collections import defaultdict
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import unicodedata
+
+# Lazy imports for torch/transformers (heavy, only needed for LLM fallback)
+torch = None
+AutoModelForCausalLM = None
+AutoTokenizer = None
+
+def _ensure_torch():
+    global torch, AutoModelForCausalLM, AutoTokenizer
+    if torch is None:
+        import torch as _torch
+        from transformers import AutoModelForCausalLM as _AMCLM, AutoTokenizer as _AT
+        torch = _torch
+        AutoModelForCausalLM = _AMCLM
+        AutoTokenizer = _AT
 
 
 # ---------------------------------------------------------------------- #
@@ -431,7 +443,7 @@ class MyModel:
                  token_to_first_char=None, ngram_model=None, word_ngram_model=None,
                  script_freq=None):
         self.model_name = model_name or self.DEFAULT_MODEL_NAME
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device or "cpu"
         self.model = model
         self.tokenizer = tokenizer
         self.token_to_first_char = token_to_first_char or {}
@@ -629,6 +641,7 @@ class MyModel:
 
         # Pre-build and save token_to_first_char mapping
         print("  Pre-building token_to_first_char mapping...")
+        _ensure_torch()
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.token_to_first_char = self._build_token_to_first_char(tokenizer)
         mapping_path = os.path.join(work_dir, "token_to_first_char.pkl")
@@ -666,12 +679,22 @@ class MyModel:
     def _ensure_model_loaded(self):
         """Lazy-load the TinyLlama model and tokenizer."""
         if self.model is None:
-            print("  Loading TinyLlama model: {}".format(self.model_name))
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_name,
-                torch_dtype=torch.float16,
-            )
+            _ensure_torch()
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            fine_tuned = getattr(self, '_fine_tuned', False)
+            work_dir = getattr(self, '_work_dir', 'work')
+            if fine_tuned:
+                ft_path = os.path.join(work_dir, "tinyllama_finetuned")
+                print("  Loading fine-tuned model from {}".format(ft_path))
+                self.tokenizer = AutoTokenizer.from_pretrained(ft_path)
+                self.model = AutoModelForCausalLM.from_pretrained(ft_path, torch_dtype=torch.float16)
+            else:
+                print("  Loading TinyLlama model: {}".format(self.model_name))
+                self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name,
+                    torch_dtype=torch.float16,
+                )
             self.model.to(self.device)
             self.model.eval()
             if self.tokenizer.pad_token is None:
@@ -1073,7 +1096,7 @@ class MyModel:
 
     @classmethod
     def load(cls, work_dir):
-        """Load model config, n-gram model, and TinyLlama from work_dir."""
+        """Load model config, n-gram model. TinyLlama is lazy-loaded only if needed."""
         config_path = os.path.join(work_dir, "model.config.json")
         model_name = cls.DEFAULT_MODEL_NAME
         fine_tuned = False
@@ -1084,38 +1107,16 @@ class MyModel:
             model_name = config.get("model_name", cls.DEFAULT_MODEL_NAME)
             fine_tuned = config.get("fine_tuned", False)
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # Defer device detection — will check when LLM is actually loaded
+        device = "cpu"  # default; _ensure_model_loaded will use cuda if available
 
-        # Load TinyLlama with float16
-        if fine_tuned:
-            ft_path = os.path.join(work_dir, "tinyllama_finetuned")
-            print("  Loading fine-tuned model from {}".format(ft_path))
-            tokenizer = AutoTokenizer.from_pretrained(ft_path)
-            model = AutoModelForCausalLM.from_pretrained(ft_path, torch_dtype=torch.float16)
-        else:
-            print("  Loading pretrained model: {}".format(model_name))
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                torch_dtype=torch.float16,
-            )
-
-        model.to(device)
-        model.eval()
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
-
-        # Load pre-built token -> first char mapping, or build it
+        # Pre-load token -> first char mapping (small, fast)
         mapping_path = os.path.join(work_dir, "token_to_first_char.pkl")
+        token_to_first_char = {}
         if os.path.exists(mapping_path):
-            print("  Loading pre-built token_to_first_char mapping...")
             with open(mapping_path, "rb") as fp:
                 token_to_first_char = pickle.load(fp)
             print("  Loaded {} token mappings".format(len(token_to_first_char)))
-        else:
-            print("  Building token -> first-char mapping...")
-            token_to_first_char = cls._build_token_to_first_char(tokenizer)
-            print("  Mapped {} tokens to first characters".format(len(token_to_first_char)))
 
         # Load n-gram model
         ngram_path = os.path.join(work_dir, "ngram_model.pkl")
@@ -1144,9 +1145,9 @@ class MyModel:
             script_freq = ScriptFrequency()
             print("  No script frequency model found")
 
-        return cls(
-            model=model,
-            tokenizer=tokenizer,
+        instance = cls(
+            model=None,  # lazy-loaded
+            tokenizer=None,  # lazy-loaded
             model_name=model_name,
             device=device,
             token_to_first_char=token_to_first_char,
@@ -1154,6 +1155,10 @@ class MyModel:
             word_ngram_model=word_ngram_model,
             script_freq=script_freq,
         )
+        instance._fine_tuned = fine_tuned
+        instance._work_dir = work_dir
+        print("  TinyLlama deferred (will lazy-load if needed)")
+        return instance
 
 
 # ---------------------------------------------------------------------- #
