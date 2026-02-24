@@ -25,6 +25,7 @@
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
 - [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster).
 - [x] **Inference pruning of n-gram model** — prune higher-order (5-7) n-grams with total count < 8; reduces pickle 44.8MB → 33.0MB. ✅ 2.0s → 1.6s (20% faster). Accuracy unchanged at 100%.
+- [x] **Aggressive pruning thresholds** — order 5≥25, 6≥35, 7≥45. ✅ 32.9MB → 21.9MB (33% reduction). Dev 100%, ~0.77s.
 - [x] **Remove unused imports** at test time — lazy-import `unicodedata` (only needed in rare ScriptFrequency fallback). ✅ Minor speedup.
 - [x] **Reduce N-gram orders** — tested dropping orders 6-7: accuracy drops to 89.3% (12 misses on dev). REJECTED — orders 6-7 are essential.
 - [ ] **Quantize TinyLlama to int8/int4** — use `bitsandbytes` or `torch.quantization` for faster inference if LLM is needed.
@@ -35,6 +36,7 @@
 - [x] **Evaluate on held-out multilingual data** — created 50-case stress test across all 26+ project languages. Found 11 failures (78%), fixed with targeted_fixes8.txt → 100%. ✅
 - [x] **Increase N-gram coverage** — the real test will have languages not in dev. Ensure CJK, Arabic, Devanagari, Cyrillic, Thai, Korean n-grams are well-represented. ✅ Added 54K Wikipedia lines across 27 languages via HF streaming.
 - [x] **Add underrepresented scripts** — Amharic, Burmese, Khmer, Tibetan, Lao, Sinhala, Armenian, Japanese, Malayalam, Gujarati, Nepali. ✅ 1569 new lines. Eliminated all LLM fallbacks on 45-sample hard test.
+- [x] **Add more underrepresented scripts (Round 2)** — Georgian, Odia, Tamil, Telugu, Kannada, Hebrew, Amharic, Mongolian Cyrillic. ✅ 80 new lines. Odia now n-gram handled. LLM fallbacks only for extremely rare scripts (Cherokee, Yi, Canadian Aboriginal, etc.).
 - [ ] **Better script detection → better fallback** — current `_get_script_defaults` is hand-coded. Train script-specific unigram/bigram fallbacks from data.
 - [ ] **Smarter LLM fallback trigger** — instead of confidence < 0.20, tune the threshold on a diverse eval set.
 - [ ] **Add a BPE/SentencePiece character model** — lightweight alternative to full TinyLlama, trained on the multilingual corpus. Could replace TinyLlama entirely for speed.
@@ -78,6 +80,7 @@
 | 2026-02-23 | Inference pruning: per-order thresholds (orders 5-7 need count≥8) | 44.8MB→33.0MB pickle, 2.0s→1.6s (20% faster). Dev 100%. Added prune_for_inference() method. |
 | 2026-02-23 | Add underrepresented scripts (Amharic, Burmese, Khmer, Tibetan, etc.) | Wikipedia + generated data (1569 lines). Hard test: 4 LLM fallbacks → 0. Dev: 100%, 0.73s. Model 32.8MB. |
 | 2026-02-23 | Stress-test eval + targeted fixes for 11 multilingual gaps | 50-case stress test: Arabic (Urdu ہ vs Arabic ه), Chinese (进步/力量 bigrams), Croatian/German/Greek/Norwegian/Spanish/Swedish/Ukrainian patterns. Incremental n-gram update with targeted_fixes8.txt. Stress: 78%→100%, Dev: 100%, 0.75s. |
+| 2026-02-24 | Add Georgian/Odia/Tamil/Telugu/Kannada/Hebrew/Amharic/Mongolian + aggressive pruning | 80 new training lines for underrepresented scripts. Odia now n-gram handled. Aggressive pruning (5≥25, 6≥35, 7≥45): 32.9MB→21.9MB. Dev: 100%, 0.77s. LLM fallbacks only on extremely rare scripts. |
 
 ---
 
