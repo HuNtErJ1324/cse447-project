@@ -83,6 +83,7 @@
 | 2026-02-24 | Add Georgian/Odia/Tamil/Telugu/Kannada/Hebrew/Amharic/Mongolian + aggressive pruning | 80 new training lines for underrepresented scripts. Odia now n-gram handled. Aggressive pruning (5≥25, 6≥35, 7≥45): 32.9MB→21.9MB. Dev: 100%, 0.77s. LLM fallbacks only on extremely rare scripts. |
 | 2026-02-24 | Script-consistency filter + 351 new multilingual lines | Added _filter_predictions_by_script() to catch cross-script errors. Downloaded 155 Tatoeba (21 langs) + 196 Wikipedia (22 langs) lines. Incremental n-gram update. Dev: 100%, 0.71s. Model: 22.3MB. |
 | 2026-02-24 | Round 6: Add 304 multilingual lines (19 langs) + incremental n-gram update | Added Filipino, Vietnamese, Burmese, Lao, Tibetan, Mongolian, Georgian, etc. training data (179 Wikipedia + 57 Tatoeba + 68 targeted). Incremental update: 725K→804K contexts, 22.6MB. Dev: 100%, 0.49s (18% faster than 0.60s). |
+| 2026-02-24 | Round 7: Add 444 multilingual lines + fix incremental update bug | 102 Tatoeba (14 langs) + 40 Wikipedia (20 langs) + 300 targeted fixes (Finnish/Hebrew/Tamil). **BUGFIX:** previous incremental updates used context length n instead of n-1, inserting wrong-length keys. Fixed and rebuilt. Dev: 100%, 0.10ms avg. 20-case stress test: 100%. Model: 22.0MB, 709K contexts. |
 
 ---
 
