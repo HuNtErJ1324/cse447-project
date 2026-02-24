@@ -559,6 +559,8 @@ class MyModel:
             "data/wiki_extra.txt",
             "data/nllb_seed.txt",
             "data/wiki_hf_extra.txt",
+            "data/wiki_round4.txt",
+            "data/tatoeba_round4.txt",
         ]
         MAX_TOTAL = 1500000  # cap total training lines for memory/time
         for sf in priority_files:
@@ -614,6 +616,8 @@ class MyModel:
             "data/targeted_fixes7.txt",
             "data/targeted_fixes8.txt",
             "data/multilingual_boost.txt",
+            "data/targeted_fixes9.txt",
+            "data/targeted_fixes10.txt",
         ]
         TARGETED_REPEATS = 40  # repeat targeted data to boost their counts
         for sf in targeted_files:
