@@ -612,6 +612,7 @@ class MyModel:
             "data/targeted_fixes6.txt",
             "data/targeted_optimization.txt",
             "data/targeted_fixes7.txt",
+            "data/targeted_fixes8.txt",
             "data/multilingual_boost.txt",
         ]
         TARGETED_REPEATS = 40  # repeat targeted data to boost their counts
