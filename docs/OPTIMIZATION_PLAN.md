@@ -34,6 +34,7 @@
 
 - [ ] **Evaluate on held-out multilingual data** — create a proper eval set beyond the 112-sample dev. Sample from UDHR, Tatoeba, Wikipedia in 20+ languages.
 - [x] **Increase N-gram coverage** — the real test will have languages not in dev. Ensure CJK, Arabic, Devanagari, Cyrillic, Thai, Korean n-grams are well-represented. ✅ Added 54K Wikipedia lines across 27 languages via HF streaming.
+- [x] **Add underrepresented scripts** — Amharic, Burmese, Khmer, Tibetan, Lao, Sinhala, Armenian, Japanese, Malayalam, Gujarati, Nepali. ✅ 1569 new lines. Eliminated all LLM fallbacks on 45-sample hard test.
 - [ ] **Better script detection → better fallback** — current `_get_script_defaults` is hand-coded. Train script-specific unigram/bigram fallbacks from data.
 - [ ] **Smarter LLM fallback trigger** — instead of confidence < 0.20, tune the threshold on a diverse eval set.
 - [ ] **Add a BPE/SentencePiece character model** — lightweight alternative to full TinyLlama, trained on the multilingual corpus. Could replace TinyLlama entirely for speed.
@@ -75,6 +76,7 @@
 | 2026-02-23 | Tested dropping orders 6-7 | REJECTED: accuracy drops to 89.3% (12 misses). Orders 6-7 are essential for longer pattern matching. |
 | 2026-02-23 | Reduced TARGETED_REPEATS 80→40, MAX_TOTAL 2M→1.5M | Memory safety: full retrain was OOM-killed at 2M lines. Incremental update approach used instead. |
 | 2026-02-23 | Inference pruning: per-order thresholds (orders 5-7 need count≥8) | 44.8MB→33.0MB pickle, 2.0s→1.6s (20% faster). Dev 100%. Added prune_for_inference() method. |
+| 2026-02-23 | Add underrepresented scripts (Amharic, Burmese, Khmer, Tibetan, etc.) | Wikipedia + generated data (1569 lines). Hard test: 4 LLM fallbacks → 0. Dev: 100%, 0.73s. Model 32.8MB. |
 
 ---
 
