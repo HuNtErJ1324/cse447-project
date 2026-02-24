@@ -23,7 +23,7 @@
 
 - [x] **Lazy-load TinyLlama** — only load if N-gram actually misses. ✅ 12.8s → 2.9s (77% faster). Also deferred torch/transformers imports.
 - [ ] **Pre-compute top-k char lists per token** — instead of aggregating at inference, store a sparse `char_to_token_ids` dict and use vectorized ops.
-- [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster).
+- [x] **Compress N-gram pickle + fast load** — use `protocol=pickle.HIGHEST_PROTOCOL` for saves; skip defaultdict rebuild in NgramModel.load() (use plain dicts directly). ✅ 3.66s → 2.0s (45% faster). Further optimized with precomputed fast format (Round 11).
 - [x] **Inference pruning of n-gram model** — prune higher-order (5-7) n-grams with total count < 8; reduces pickle 44.8MB → 33.0MB. ✅ 2.0s → 1.6s (20% faster). Accuracy unchanged at 100%.
 - [x] **Aggressive pruning thresholds** — order 5≥25, 6≥35, 7≥45. ✅ 32.9MB → 21.9MB (33% reduction). Dev 100%, ~0.77s.
 - [x] **Remove unused imports** at test time — lazy-import `unicodedata` (only needed in rare ScriptFrequency fallback). ✅ Minor speedup.
@@ -87,6 +87,7 @@
 | 2026-02-24 | Round 8: Add 691 multilingual lines (25+ langs) | 166 targeted phrases (Swahili/Slovak/Czech/Finnish/Norwegian/Greek/Hindi/Bengali/Arabic/Urdu/Chinese/Korean/Turkish/Vietnamese/Russian/Ukrainian + more) + 170 Tatoeba (25 langs) + 362 Wikipedia extracts (40 langs incl. Georgian/Armenian/Sinhala/Tamil/Telugu/Kannada/Malayalam/Gujarati). Model: 715K contexts, 22.2MB. Dev: 100%, 0.61s. Stress test improved 52%→56% (Chinese 和 now correct). |
 | 2026-02-24 | Round 9: Add 348 multilingual lines (21+ langs) | 101 targeted phrases + 31 targeted fixes + 48 pattern repetitions + 168 Wikipedia extracts (Finnish/Turkish/Croatian/Slovak/Malay/Dutch/Czech/Swahili/Vietnamese/Indonesian/Norwegian/Swedish/Greek/Ukrainian/Urdu/Bengali/Hindi/Chinese/Arabic). Dev: 100%, 0.54s (12% faster than 0.61s). 73-case stress test: 92.3% (up from ~82%). Model: 22.1MB. |
 | 2026-02-24 | Round 10: Add 1061 multilingual lines (21+ langs) + targeted fixes | 824 Wikipedia (21 langs: fi/cs/pl/vi/sv/ko/sw/nl/hr/tr/tl/th/ka/bg/ru/sk/de/no/ms/id/ha) + 170 Tatoeba (19 langs) + 67 targeted fixes (Czech/Malay/Swedish/Croatian/Swahili patterns). Incremental update + pruning. Dev: 100%, 0.44s (30% faster). 90-case stress test: 98.9% (was 72.2%). Model: 17.8MB (20% smaller). |
+| 2026-02-24 | Round 11: Fast-format ngram + lazy word-ngram loading | Precomputed top-5 chars/counts/total per context in ngram_model.pkl (15.9MB, ~50ms faster load). Lazy-load word_ngram_model.pkl (132ms saved — only loads if confidence < 0.30 at word boundary, never triggers on dev). **Dev: 100%, 0.39s (32% faster than 0.57s).** 135-case multilingual stress test: 100% n-gram, 0 LLM fallbacks. |
 
 ---
 
