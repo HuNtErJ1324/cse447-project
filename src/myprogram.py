@@ -250,6 +250,8 @@ class NgramModel:
         if not self.trained:
             return None
 
+        fast = getattr(self, '_fast_format', False)
+
         # Find the best matching n-gram order
         best_n = None
         best_total = 0
@@ -260,7 +262,10 @@ class NgramModel:
             ctx = context[-(ctx_len):]
             cc = self.counts[n].get(ctx)
             if cc is not None:
-                total = sum(cc.values())
+                if fast:
+                    total = cc[2]  # (chars, counts, total)
+                else:
+                    total = sum(cc.values())
                 if total >= min_count:
                     best_n = n
                     best_total = total
@@ -272,12 +277,18 @@ class NgramModel:
         # If the best match has plenty of data, use it directly (fast path)
         if best_total >= 50:
             ctx = context[-(best_n - 1):]
-            char_counts = self.counts[best_n][ctx]
-            sorted_chars = sorted(char_counts.items(),
-                                  key=lambda x: x[1], reverse=True)
-            top = [ch for ch, cnt in sorted_chars[:k]]
-            top3_count = sum(cnt for _, cnt in sorted_chars[:min(k, 3)])
-            confidence = top3_count / best_total
+            cc = self.counts[best_n][ctx]
+            if fast:
+                chars_str, counts_tup, total = cc
+                top = list(chars_str[:k])
+                top3_count = sum(counts_tup[:min(k, 3)])
+                confidence = top3_count / total
+            else:
+                sorted_chars = sorted(cc.items(),
+                                      key=lambda x: x[1], reverse=True)
+                top = [ch for ch, cnt in sorted_chars[:k]]
+                top3_count = sum(cnt for _, cnt in sorted_chars[:min(k, 3)])
+                confidence = top3_count / best_total
             while len(top) < k:
                 top.append("e")
             return top, confidence
@@ -292,13 +303,20 @@ class NgramModel:
             cc = self.counts[n].get(ctx)
             if cc is None:
                 continue
-            total = sum(cc.values())
-            if total < min_count:
-                continue
-            # Higher-order gets exponentially more weight
-            weight = 4.0 ** (n - self.min_n)
-            for ch, cnt in cc.items():
-                char_scores[ch] += weight * (cnt / total)
+            if fast:
+                chars_str, counts_tup, total = cc
+                if total < min_count:
+                    continue
+                weight = 4.0 ** (n - self.min_n)
+                for i, ch in enumerate(chars_str):
+                    char_scores[ch] += weight * (counts_tup[i] / total)
+            else:
+                total = sum(cc.values())
+                if total < min_count:
+                    continue
+                weight = 4.0 ** (n - self.min_n)
+                for ch, cnt in cc.items():
+                    char_scores[ch] += weight * (cnt / total)
 
         if not char_scores:
             return None
@@ -357,6 +375,37 @@ class NgramModel:
         with open(path, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def save_fast(self, path):
+        """Save precomputed top-k predictions for fast inference loading.
+        
+        Instead of storing full char->count dicts, stores per context:
+          (top5_chars: str, top5_counts: tuple[int], total: int)
+        This is ~50% faster to load and ~30% smaller.
+        """
+        precomputed = {}
+        for n, ctx_dict in self.counts.items():
+            pc = {}
+            for ctx, chars in ctx_dict.items():
+                if isinstance(chars, tuple):
+                    # Already precomputed format
+                    pc[ctx] = chars
+                    continue
+                sorted_items = sorted(chars.items(), key=lambda x: -x[1])[:5]
+                total = sum(chars.values())
+                top_chars = "".join(c for c, _ in sorted_items)
+                top_counts = tuple(cnt for _, cnt in sorted_items)
+                pc[ctx] = (top_chars, top_counts, total)
+            precomputed[n] = pc
+        data = {
+            "max_n": self.max_n,
+            "min_n": self.min_n,
+            "trained": self.trained,
+            "counts": precomputed,
+            "fast_format": True,
+        }
+        with open(path, "wb") as f:
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
     @classmethod
     def load(cls, path):
         """Load n-gram counts from disk."""
@@ -364,6 +413,7 @@ class NgramModel:
             data = pickle.load(f)
         model = cls(max_n=data["max_n"], min_n=data["min_n"])
         model.trained = data["trained"]
+        model._fast_format = data.get("fast_format", False)
         # Use plain dicts directly — predict() only uses .get()
         model.counts = {int(n): ctx_dict for n, ctx_dict in data["counts"].items()}
         return model
@@ -726,6 +776,16 @@ class MyModel:
 
         return mapping
 
+    def _ensure_word_ngram_loaded(self):
+        """Lazy-load word n-gram model. Returns True if trained model is available."""
+        if not self.word_ngram_model.trained:
+            work_dir = getattr(self, '_work_dir', 'work')
+            path = os.path.join(work_dir, "word_ngram_model.pkl")
+            if os.path.exists(path):
+                self.word_ngram_model = WordNgramModel.load(path)
+                print("  Lazy-loaded word n-gram model")
+        return self.word_ngram_model.trained
+
     def _ensure_model_loaded(self):
         """Lazy-load the TinyLlama model and tokenizer."""
         if self.model is None:
@@ -786,7 +846,7 @@ class MyModel:
                 ngram_pred, confidence = result
 
                 # Blend with word n-gram model at word boundaries (only when very uncertain)
-                if inp and inp[-1] == ' ' and confidence < 0.30 and self.word_ngram_model.trained:
+                if inp and inp[-1] == ' ' and confidence < 0.30 and self._ensure_word_ngram_loaded():
                     words = inp.split()
                     word_pred = self.word_ngram_model.predict(words, k=3)
                     if word_pred:
@@ -1250,8 +1310,8 @@ class MyModel:
         ngram_path = os.path.join(work_dir, "ngram_model.pkl")
         print("  Pruning n-gram model for inference...")
         self.ngram_model.prune_for_inference()
-        self.ngram_model.save(ngram_path)
-        print("  Saved n-gram model to {}".format(ngram_path))
+        self.ngram_model.save_fast(ngram_path)
+        print("  Saved n-gram model (fast format) to {}".format(ngram_path))
 
         # Save word n-gram model
         word_ngram_path = os.path.join(work_dir, "word_ngram_model.pkl")
@@ -1303,14 +1363,10 @@ class MyModel:
             ngram_model = NgramModel()
             print("  No n-gram model found — using TinyLlama only")
 
-        # Load word n-gram model
+        # Defer word n-gram model loading (rarely needed at inference)
+        word_ngram_model = WordNgramModel()  # empty placeholder
         word_ngram_path = os.path.join(work_dir, "word_ngram_model.pkl")
-        if os.path.exists(word_ngram_path):
-            word_ngram_model = WordNgramModel.load(word_ngram_path)
-            print("  Loaded word n-gram model (trained={})".format(word_ngram_model.trained))
-        else:
-            word_ngram_model = WordNgramModel()
-            print("  No word n-gram model found")
+        print("  Word n-gram model deferred (will lazy-load if needed)")
 
         # Load script frequency model
         script_freq_path = os.path.join(work_dir, "script_freq.pkl")
