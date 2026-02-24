@@ -82,6 +82,7 @@
 | 2026-02-23 | Stress-test eval + targeted fixes for 11 multilingual gaps | 50-case stress test: Arabic (Urdu ہ vs Arabic ه), Chinese (进步/力量 bigrams), Croatian/German/Greek/Norwegian/Spanish/Swedish/Ukrainian patterns. Incremental n-gram update with targeted_fixes8.txt. Stress: 78%→100%, Dev: 100%, 0.75s. |
 | 2026-02-24 | Add Georgian/Odia/Tamil/Telugu/Kannada/Hebrew/Amharic/Mongolian + aggressive pruning | 80 new training lines for underrepresented scripts. Odia now n-gram handled. Aggressive pruning (5≥25, 6≥35, 7≥45): 32.9MB→21.9MB. Dev: 100%, 0.77s. LLM fallbacks only on extremely rare scripts. |
 | 2026-02-24 | Script-consistency filter + 351 new multilingual lines | Added _filter_predictions_by_script() to catch cross-script errors. Downloaded 155 Tatoeba (21 langs) + 196 Wikipedia (22 langs) lines. Incremental n-gram update. Dev: 100%, 0.71s. Model: 22.3MB. |
+| 2026-02-24 | Round 6: Add 304 multilingual lines (19 langs) + incremental n-gram update | Added Filipino, Vietnamese, Burmese, Lao, Tibetan, Mongolian, Georgian, etc. training data (179 Wikipedia + 57 Tatoeba + 68 targeted). Incremental update: 725K→804K contexts, 22.6MB. Dev: 100%, 0.49s (18% faster than 0.60s). |
 
 ---
 
