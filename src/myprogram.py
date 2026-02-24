@@ -823,6 +823,10 @@ class MyModel:
                         # Replace 3rd prediction with .
                         preds[i] = pred_str[:2] + '.'
 
+                # Script-consistency filter: ensure predictions match input script
+                filtered = self._filter_predictions_by_script(inp, list(preds[i]))
+                preds[i] = "".join(filtered[:3])
+
                 ngram_count += 1
                 elapsed_ms = (time.perf_counter() - t0) * 1000
                 self.latency_log.append((inp[:30], "ngram", elapsed_ms))
@@ -958,6 +962,126 @@ class MyModel:
             return ['e', ' ', 'a']
         
         return None
+
+    @staticmethod
+    def _get_script_of_char(ch):
+        """Get broad script category for a character."""
+        cp = ord(ch)
+        if cp < 0x0080: return 'Latin'
+        if 0x00C0 <= cp <= 0x024F: return 'Latin'  # Latin Extended
+        if 0x0400 <= cp <= 0x04FF: return 'Cyrillic'
+        if 0x0500 <= cp <= 0x052F: return 'Cyrillic'
+        if 0x0370 <= cp <= 0x03FF: return 'Greek'
+        if 0x0600 <= cp <= 0x06FF: return 'Arabic'
+        if 0x0750 <= cp <= 0x077F: return 'Arabic'
+        if 0xFB50 <= cp <= 0xFDFF: return 'Arabic'
+        if 0xFE70 <= cp <= 0xFEFF: return 'Arabic'
+        if 0x0900 <= cp <= 0x097F: return 'Devanagari'
+        if 0x0980 <= cp <= 0x09FF: return 'Bengali'
+        if 0x0A00 <= cp <= 0x0A7F: return 'Gurmukhi'
+        if 0x0A80 <= cp <= 0x0AFF: return 'Gujarati'
+        if 0x0B00 <= cp <= 0x0B7F: return 'Oriya'
+        if 0x0B80 <= cp <= 0x0BFF: return 'Tamil'
+        if 0x0C00 <= cp <= 0x0C7F: return 'Telugu'
+        if 0x0C80 <= cp <= 0x0CFF: return 'Kannada'
+        if 0x0D00 <= cp <= 0x0D7F: return 'Malayalam'
+        if 0x0D80 <= cp <= 0x0DFF: return 'Sinhala'
+        if 0x0E00 <= cp <= 0x0E7F: return 'Thai'
+        if 0x0E80 <= cp <= 0x0EFF: return 'Lao'
+        if 0x1000 <= cp <= 0x109F: return 'Myanmar'
+        if 0x10A0 <= cp <= 0x10FF: return 'Georgian'
+        if 0x1780 <= cp <= 0x17FF: return 'Khmer'
+        if 0x4E00 <= cp <= 0x9FFF: return 'CJK'
+        if 0x3400 <= cp <= 0x4DBF: return 'CJK'
+        if 0x3040 <= cp <= 0x309F: return 'Hiragana'
+        if 0x30A0 <= cp <= 0x30FF: return 'Katakana'
+        if 0xAC00 <= cp <= 0xD7AF: return 'Korean'
+        if 0x1100 <= cp <= 0x11FF: return 'Korean'
+        if 0x05D0 <= cp <= 0x05EA: return 'Hebrew'
+        if 0x0530 <= cp <= 0x058F: return 'Armenian'
+        return 'Other'
+
+    @staticmethod
+    def _get_context_script(text):
+        """Determine the dominant non-Latin script of the input context."""
+        if not text:
+            return 'Latin'
+        # Look at last ~20 non-space, non-punctuation chars
+        scripts = {}
+        for ch in reversed(text[-40:]):
+            if ch.isspace() or not ch.isprintable():
+                continue
+            if ch in '.,!?;:()[]{}"\'-/\\@#$%^&*+=<>~`|0123456789':
+                continue
+            s = MyModel._get_script_of_char(ch)
+            scripts[s] = scripts.get(s, 0) + 1
+            if sum(scripts.values()) >= 10:
+                break
+        if not scripts:
+            return 'Latin'
+        # Return most common script, but prefer non-Latin if there's a mix
+        sorted_scripts = sorted(scripts.items(), key=lambda x: x[1], reverse=True)
+        if len(sorted_scripts) > 1 and sorted_scripts[0][0] == 'Latin' and sorted_scripts[1][1] >= 3:
+            return sorted_scripts[1][0]  # prefer non-Latin in mixed contexts
+        return sorted_scripts[0][0]
+
+    @staticmethod
+    def _scripts_compatible(context_script, char_script):
+        """Check if a predicted character's script is compatible with the context."""
+        if context_script == char_script:
+            return True
+        # Space and punctuation are always compatible
+        if char_script == 'Latin' and context_script != 'Latin':
+            return False  # Latin letters in non-Latin context are wrong
+        if char_script == 'Other':
+            return True  # punctuation, digits, etc.
+        # CJK, Hiragana, Katakana are compatible with each other
+        cjk_group = {'CJK', 'Hiragana', 'Katakana'}
+        if context_script in cjk_group and char_script in cjk_group:
+            return True
+        return context_script == char_script
+
+    def _filter_predictions_by_script(self, inp, pred_chars):
+        """Filter predicted characters to be script-consistent with input context.
+        Only applies to non-Latin contexts where script mismatch is detected."""
+        ctx_script = self._get_context_script(inp)
+        if ctx_script == 'Latin':
+            return pred_chars  # Latin is fine as-is
+        
+        # Check if predictions contain wrong-script characters
+        filtered = []
+        wrong = []
+        for ch in pred_chars:
+            if ch == ' ' or not ch.isprintable():
+                filtered.append(ch)  # space is always OK
+            else:
+                ch_script = self._get_script_of_char(ch)
+                if self._scripts_compatible(ctx_script, ch_script):
+                    filtered.append(ch)
+                else:
+                    wrong.append(ch)
+        
+        if len(filtered) >= 3 or not wrong:
+            return filtered[:3] if len(filtered) >= 3 else pred_chars
+        
+        # Need to fill gaps with script-appropriate chars
+        script_defaults = self._get_script_defaults(inp)
+        if script_defaults:
+            for ch in script_defaults:
+                if ch not in filtered:
+                    filtered.append(ch)
+                if len(filtered) >= 3:
+                    break
+        
+        # Still not enough? Use script_freq
+        if len(filtered) < 3:
+            fillers = self.script_freq.get_fillers(inp, set(filtered), k=3-len(filtered))
+            filtered.extend(fillers[:3-len(filtered)])
+        
+        while len(filtered) < 3:
+            filtered.append(' ')
+        
+        return filtered[:3]
 
     @staticmethod
     def _is_cjk(ch):
