@@ -623,6 +623,7 @@ class MyModel:
             "data/wiki_round16.txt",
             "data/targeted_round16.txt",
             "data/targeted_round16_reps.txt",
+            "data/wiki_round18.txt",
         ]
         MAX_TOTAL = 1500000  # cap total training lines for memory/time
         for sf in priority_files:
@@ -691,8 +692,10 @@ class MyModel:
             "data/targeted_fixes13.txt",
             "data/targeted_round13.txt",
             "data/targeted_fixes_round15.txt",
+            "data/targeted_fixes_round18.txt",
         ]
         TARGETED_REPEATS = 40  # repeat targeted data to boost their counts
+        TARGETED_REPEATS_LARGE = 5  # for files > 1000 lines, use fewer reps
         for sf in targeted_files:
             if os.path.exists(sf):
                 lines = []
@@ -701,10 +704,11 @@ class MyModel:
                         line = line.strip()
                         if line:
                             lines.append(line)
-                for _ in range(TARGETED_REPEATS):
+                reps = TARGETED_REPEATS_LARGE if len(lines) > 1000 else TARGETED_REPEATS
+                for _ in range(reps):
                     data.extend(lines)
                 print("  Added {} lines from {} (x{} = {})".format(
-                    len(lines), sf, TARGETED_REPEATS, len(lines) * TARGETED_REPEATS))
+                    len(lines), sf, reps, len(lines) * reps))
 
         print("  Total training lines: {}".format(len(data)))
         return data
