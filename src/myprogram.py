@@ -687,6 +687,7 @@ class MyModel:
             "data/targeted_round12.txt",
             "data/targeted_fixes13.txt",
             "data/targeted_round13.txt",
+            "data/targeted_fixes_round15.txt",
         ]
         TARGETED_REPEATS = 40  # repeat targeted data to boost their counts
         for sf in targeted_files:
@@ -1082,6 +1083,10 @@ class MyModel:
         if 0x1100 <= cp <= 0x11FF: return 'Korean'
         if 0x05D0 <= cp <= 0x05EA: return 'Hebrew'
         if 0x0530 <= cp <= 0x058F: return 'Armenian'
+        if 0x1200 <= cp <= 0x137F: return 'Ethiopic'
+        if 0x1380 <= cp <= 0x139F: return 'Ethiopic'  # Ethiopic Supplement
+        if 0x2D80 <= cp <= 0x2DDF: return 'Ethiopic'  # Ethiopic Extended
+        if 0x0F00 <= cp <= 0x0FFF: return 'Tibetan'
         return 'Other'
 
     @staticmethod
@@ -1134,9 +1139,11 @@ class MyModel:
         # Check if predictions contain wrong-script characters
         filtered = []
         wrong = []
+        # Common punctuation is script-neutral (should never be filtered)
+        _SCRIPT_NEUTRAL = set(' \t\n.!?,:;-–—…·•\'\"()[]{}/<>@#$%^&*+=~`|\\0123456789。！？，、；：（）【】《》「」『』""''')
         for ch in pred_chars:
-            if ch == ' ' or not ch.isprintable():
-                filtered.append(ch)  # space is always OK
+            if ch in _SCRIPT_NEUTRAL or not ch.isprintable():
+                filtered.append(ch)  # punctuation/space always OK
             else:
                 ch_script = self._get_script_of_char(ch)
                 if self._scripts_compatible(ctx_script, ch_script):
