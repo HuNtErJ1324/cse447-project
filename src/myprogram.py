@@ -624,6 +624,7 @@ class MyModel:
             "data/targeted_round16.txt",
             "data/targeted_round16_reps.txt",
             "data/wiki_round18.txt",
+            "data/wiki_round19.txt",
         ]
         MAX_TOTAL = 1500000  # cap total training lines for memory/time
         for sf in priority_files:
