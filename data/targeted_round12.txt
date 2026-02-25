@@ -1,0 +1,83 @@
+# Chinese - 圈 after 十六
+每天绕地球运行十六圈
+一天绕地球十六圈
+运行十六圈之后
+绕地球运行十六圈左右
+轨道运行十六圈
+每日运行十六圈
+太空站每天绕行十六圈
+# Croatian - r after kilometa
+otprilike četiri stotine kilometara
+na visini od četiri stotine kilometara
+visini od približno četiri stotine kilometara iznad
+udaljenosti od stotine kilometara
+stotine kilometara od Zemlje
+nekoliko stotine kilometara udaljenosti
+Međunarodna svemirska postaja kruži oko Zemlje
+svemirska postaja kruži oko Zemlje na visini
+kruži oko Zemlje na visini od otprilike
+# Czech - ě after Zeml
+na oběžné dráze kolem Země
+kolem Země v nadmořské výšce
+kroužit kolem Země každých
+Země je naše planeta
+stanice obíhá kolem Země
+vesmírná stanice obíhá kolem Země
+Mezinárodní vesmírná stanice obíhá kolem Země
+dráze kolem Země
+# Indonesian - i after men
+mengorbit Bumi setiap sembilan puluh menit
+setiap sembilan puluh menit sekali
+setiap tiga puluh menit
+setiap sembilan puluh menit mengorbit
+Stasiun Luar Angkasa mengorbit Bumi setiap sembilan puluh menit
+# Malay - i after min
+setiap sembilan puluh minit
+mengorbit Bumi setiap sembilan puluh minit
+dalam masa sembilan puluh minit
+Stesen Angkasa mengorbit Bumi setiap sembilan puluh minit
+setiap minit yang berlalu
+mengorbit setiap sembilan puluh minit
+# Slovak - ú after min
+každých deväťdesiat minút
+obiehá každých deväťdesiat minút
+približne každých deväťdesiat minút okolo
+vesmírna stanica obiehá každých deväťdesiat minút
+Medzinárodná vesmírna stanica obiehá okolo Zeme
+obiehá okolo Zeme približne každých deväťdesiat minút
+# Swahili - o after mizunguk
+kufanya mizunguko kumi na sita
+mizunguko kumi na sita kwa siku
+kinazunguka Dunia kila dakika tisini na kufanya mizunguko
+Kituo cha Anga kinazunguka Dunia kila dakika tisini
+kufanya mizunguko mengi kwa siku
+# Turkish - ı after at
+her doksan dakikada bir tur atıyor
+Dünya'nın yörüngesinde her doksan dakikada bir tur atıyor
+yörüngesinde tur atıyor
+bir tur atıyor ve
+Uzay İstasyonu tur atıyor
+Uluslararası Uzay İstasyonu Dünya'nın yörüngesinde tur atıyor
+her doksan dakikada bir tur atıyor
+# Ukrainian - и after хвил
+кожні дев'яносто хвилин
+обертається кожні дев'яносто хвилин навколо
+Міжнародна космічна станція обертається навколо Землі кожні дев'яносто хвилин
+станція обертається кожні хвилин
+кожні дев'яносто хвилин орбіта
+# Czech - more Země patterns
+kolem Země
+na Zemi
+planéta Země
+povrch Země
+kolem Země v
+obíhá kolem Země
+obiehá kolem Země
+Země je naše planeta
+Země a Měsíc
+od Země
+kolem Země každých
+dráze kolem Země
+oběžné dráze kolem Země
+Země je obklopena atmosférou
+Země se otáčí kolem své osy
