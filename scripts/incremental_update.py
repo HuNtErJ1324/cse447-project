@@ -18,12 +18,19 @@ def main():
     max_n = data['max_n']
     counts = data['counts']
 
-    # Convert fast_format entries back to dicts for updating
+    # Convert entries back to dicts for updating
+    is_slim = data.get('slim', False)
     raw_counts = {}
     for n in range(min_n, max_n + 1):
         raw_counts[n] = {}
         for ctx, entry in counts[n].items():
-            if isinstance(entry, tuple):
+            if isinstance(entry, str):
+                # Slim format: just chars string, synthesize counts
+                d = {}
+                for i, ch in enumerate(entry):
+                    d[ch] = max(100 - i * 10, 10)  # synthetic counts
+                raw_counts[n][ctx] = d
+            elif isinstance(entry, tuple):
                 chars_str, counts_tup, total = entry
                 d = {}
                 for i, ch in enumerate(chars_str):
