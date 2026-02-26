@@ -250,7 +250,26 @@ class NgramModel:
         if not self.trained:
             return None
 
+        slim = getattr(self, '_slim', False)
         fast = getattr(self, '_fast_format', False)
+
+        # Slim format: ctx -> chars_str only, no counts/totals
+        if slim:
+            for n in range(self.max_n, self.min_n - 1, -1):
+                ctx_len = n - 1
+                if len(context) < ctx_len:
+                    continue
+                ctx = context[-(ctx_len):]
+                chars_str = self.counts[n].get(ctx)
+                if chars_str is not None:
+                    top = list(chars_str[:k])
+                    while len(top) < k:
+                        top.append("e")
+                    # Synthesize confidence from n-gram order
+                    # Higher order = more specific = higher confidence
+                    confidence = min(0.95, 0.40 + 0.12 * (n - self.min_n))
+                    return top, confidence
+            return None
 
         # Find the best matching n-gram order
         best_n = None
@@ -406,6 +425,34 @@ class NgramModel:
         with open(path, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def save_slim(self, path):
+        """Save ultra-slim format: ctx -> top_chars_string only.
+        
+        Drops counts/totals entirely for ~3x faster load times.
+        Confidence is synthesized from n-gram order at predict time.
+        """
+        slim = {}
+        for n, ctx_dict in self.counts.items():
+            sd = {}
+            for ctx, chars in ctx_dict.items():
+                if isinstance(chars, tuple):
+                    sd[ctx] = chars[0]  # fast format: (chars_str, counts, total)
+                elif isinstance(chars, str):
+                    sd[ctx] = chars  # already slim
+                else:
+                    sorted_items = sorted(chars.items(), key=lambda x: -x[1])[:5]
+                    sd[ctx] = "".join(c for c, _ in sorted_items)
+            slim[n] = sd
+        data = {
+            "max_n": self.max_n,
+            "min_n": self.min_n,
+            "trained": self.trained,
+            "counts": slim,
+            "slim": True,
+        }
+        with open(path, "wb") as f:
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
     @classmethod
     def load(cls, path):
         """Load n-gram counts from disk."""
@@ -414,6 +461,7 @@ class NgramModel:
         model = cls(max_n=data["max_n"], min_n=data["min_n"])
         model.trained = data["trained"]
         model._fast_format = data.get("fast_format", False)
+        model._slim = data.get("slim", False)
         # Use plain dicts directly — predict() only uses .get()
         model.counts = {int(n): ctx_dict for n, ctx_dict in data["counts"].items()}
         return model
@@ -1330,8 +1378,8 @@ class MyModel:
         ngram_path = os.path.join(work_dir, "ngram_model.pkl")
         print("  Pruning n-gram model for inference...")
         self.ngram_model.prune_for_inference()
-        self.ngram_model.save_fast(ngram_path)
-        print("  Saved n-gram model (fast format) to {}".format(ngram_path))
+        self.ngram_model.save_slim(ngram_path)
+        print("  Saved n-gram model (slim format) to {}".format(ngram_path))
 
         # Save word n-gram model
         word_ngram_path = os.path.join(work_dir, "word_ngram_model.pkl")
